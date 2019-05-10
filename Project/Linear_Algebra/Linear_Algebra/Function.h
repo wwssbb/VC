@@ -26,3 +26,5 @@ void PrintMatrix(const Matrix* matrix);
 void QR(Matrix* A, Matrix* Q, Matrix* R);
 
 void Eigenvectors(Matrix *eigenVector, Matrix *A, Matrix *eigenValue);
+
+Matrix* MatrixTranspose(const Matrix* matrix);

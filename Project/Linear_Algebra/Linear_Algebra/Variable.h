@@ -4,6 +4,7 @@
 #include"stdlib.h"
 #include"math.h"
 #include"time.h"
+#include<iostream>
 using namespace std;
 
 typedef enum

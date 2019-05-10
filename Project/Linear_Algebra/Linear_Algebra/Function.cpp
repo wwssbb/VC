@@ -840,4 +840,26 @@ void Eigenvectors(Matrix *eigenVector, Matrix *A, Matrix *eigenValue)
 
 }
 
+Matrix* MatrixTranspose(const Matrix* matrix)
+{
+	Matrix* C = new Matrix;
+	C->column = matrix->row;
+	C->height = matrix->height;
+	C->row = matrix->column;
+	C->array = (MatrixType*)malloc(matrix->row * matrix->column * matrix->height * sizeof(MatrixType));
 
+	for (unsigned i = 1; i <= matrix->height; i++)
+	{
+		for (unsigned j = 0; j < matrix->row; j++)
+		{
+			for (unsigned k = 0; k < C->row; k++)
+			{
+					C->array[i* k *(C->column) + j] = matrix->array[i*j*(matrix->column)+k];
+					cout << C->array[i* k *(C->column) + j] << endl;
+					getchar();
+			}
+		}
+	}
+
+	return C;
+}
