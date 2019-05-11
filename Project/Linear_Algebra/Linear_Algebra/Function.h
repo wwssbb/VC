@@ -27,4 +27,16 @@ void QR(Matrix* A, Matrix* Q, Matrix* R);
 
 void Eigenvectors(Matrix *eigenVector, Matrix *A, Matrix *eigenValue);
 
-Matrix* MatrixTranspose(const Matrix* matrix);
+int MatrixTranspose(const Matrix* matrix, Matrix* C);
+
+int MatrixAdd(const Matrix* A, const Matrix*B, Matrix* C);
+
+int BuildMatrix(Matrix* matrix, unsigned row, unsigned column, unsigned height);
+
+int MatrixSubstract(const Matrix* A, const Matrix*B, Matrix* C);
+
+int MatrixMultibyMatrix(const Matrix* A, const Matrix* B, Matrix* C);
+
+int MatrixCopy(const Matrix* matrix, Matrix* C);
+
+int MatrixMultibyConst(const Matrix* matrix, Matrix* C, MatrixType con);

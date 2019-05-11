@@ -840,13 +840,19 @@ void Eigenvectors(Matrix *eigenVector, Matrix *A, Matrix *eigenValue)
 
 }
 
-Matrix* MatrixTranspose(const Matrix* matrix)
+int BuildMatrix(Matrix* matrix, unsigned row, unsigned column, unsigned height)
 {
-	Matrix* C = new Matrix;
-	C->column = matrix->row;
-	C->height = matrix->height;
-	C->row = matrix->column;
-	C->array = (MatrixType*)malloc(matrix->row * matrix->column * matrix->height * sizeof(MatrixType));
+	matrix->column = row;
+	matrix->height = height;
+	matrix->row = column;
+	matrix->array = (MatrixType*)malloc(row * column * height * sizeof(MatrixType));
+
+	return 0;
+}
+
+int MatrixTranspose(const Matrix* matrix, Matrix* C)
+{
+	BuildMatrix(C, matrix->row, matrix->column, matrix->height);
 
 	for (unsigned i = 1; i <= matrix->height; i++)
 	{
@@ -855,11 +861,153 @@ Matrix* MatrixTranspose(const Matrix* matrix)
 			for (unsigned k = 0; k < C->row; k++)
 			{
 					C->array[i* k *(C->column) + j] = matrix->array[i*j*(matrix->column)+k];
-					cout << C->array[i* k *(C->column) + j] << endl;
-					getchar();
 			}
 		}
 	}
 
-	return C;
+	return 0;
+}
+
+int MatrixAdd(const Matrix* A, const Matrix*B, Matrix* C)
+{
+	if (IsNullMatrix(A)||(IsNullMatrix(B)))
+	{
+		cout << "The input added Matrix is invalid. " << endl;
+	}
+	else
+	{
+		if ((A->row != B->row) || (A->height != B->height) || (A->column != B->column))
+		{
+			cout << "The size of the input matrixs could not match each other." << endl;
+		}
+		else
+		{
+			unsigned size = A->row * A->column * A->height;			
+			BuildMatrix(C, A->row, A->column, A->height);
+
+			for (int i = 0; i < size; i++)
+			{
+				C->array[i] = A->array[i] + B->array[i];
+			}
+
+		}
+	}
+
+	return 0;
+}
+
+int MatrixSubstract(const Matrix* A, const Matrix*B, Matrix* C)
+{
+	if (IsNullMatrix(A) || (IsNullMatrix(B)))
+	{
+		cout << "The input added Matrix is invalid. " << endl;
+	}
+	else
+	{
+		if ((A->row != B->row) || (A->height != B->height) || (A->column != B->column))
+		{
+			cout << "The size of the input matrixs could not match each other." << endl;
+		}
+		else
+		{
+			unsigned size = A->row * A->column * A->height;
+			BuildMatrix(C, A->row, A->column, A->height);
+
+			for (int i = 0; i < size; i++)
+			{
+				C->array[i] = A->array[i] - B->array[i];
+			}
+
+		}
+	}
+
+	return 0;
+}
+
+int MatrixMultibyMatrix(const Matrix* A,const Matrix* B, Matrix* C)
+{
+	if (IsNullMatrix(A) || IsNullMatrix(B))
+	{
+		cout << "The input matrixs are inavalid." << endl;
+	}
+	else
+	{
+		if ((A->column != B->row) || (A->height != B->height))
+		{
+			cout << "The size of the input matrixs could not match each other." << endl;
+		}
+		else
+		{
+			BuildMatrix(C, A->row, B->column, A->height);
+			Matrix* B_template = new Matrix;
+			Matrix* C_template = new Matrix;
+			MatrixTranspose(B, B_template);
+			MatrixTranspose(C, C_template);
+
+			for (unsigned h = 1; h <= A->height; h++)
+			{
+				for (unsigned i = 0; i < B_template->row; i++)
+				{		
+					for (unsigned j = 0; j < A->row; j++)
+					{
+						MatrixType row_template = 0.0;
+
+						for (unsigned k = 0; k < B_template->column; k++)
+						{
+							row_template += B_template->array[h*i*B_template->column + k] * A->array[h*j*A->column + k];
+						}
+
+						C_template->array[h*i*C_template->column+j] = row_template;
+	
+					}
+				}
+			}
+
+			MatrixTranspose(C_template, C);
+			DestroyMatrix(C_template);
+			DestroyMatrix(B_template);
+		}
+	}
+
+	return 0;
+}
+
+int MatrixCopy(const Matrix* matrix,Matrix* C)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The input matrix is invalid" << endl;
+	}
+	else
+	{
+		unsigned size = matrix->row * matrix->column * matrix->height;
+		BuildMatrix(C, matrix->row, matrix->column, matrix->height);
+
+		for (int i = 0; i < size; i++)
+		{
+			C->array[i] = matrix->array[i];
+		}
+	}
+
+	return 0;
+}
+
+int MatrixMultibyConst(const Matrix* matrix, Matrix* C, MatrixType con)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The input matrix is invalid" << endl;
+	}
+	else
+	{
+		unsigned size = matrix->row * matrix->column * matrix->height;
+		BuildMatrix(C, matrix->row, matrix->column, matrix->height);
+
+		for (int i = 0; i < size; i++)
+		{
+			C->array[i] = matrix->array[i]*con;
+		}
+	}
+
+	return 0;
 }

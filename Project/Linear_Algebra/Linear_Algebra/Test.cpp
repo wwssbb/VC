@@ -6,9 +6,6 @@ int main()
 {
 
 	//const unsigned NUM = 50; //最大迭代次数
-
-
-
 	//unsigned N = 3;
 
 	//unsigned k;
@@ -146,35 +143,47 @@ int main()
 
 	unsigned N = 3;
 
-	Matrix A;
+	Matrix* A=new Matrix;
 
-	Matrix* B;
+	Matrix* B=new Matrix;
 
-	SetMatrixSize(&A, N, N, 1);
+	Matrix* C = new Matrix;
 
-	A.array[0] = -1;
+	SetMatrixSize(A, N, N, 1);
+	SetMatrixSize(B, 3, 1, 1);
 
-	A.array[1] = 2;
+	A->array[0] = -1;
 
-	A.array[2] = 1;
+	A->array[1] = 2;
 
-	A.array[3] = 2;
+	A->array[2] = 1;
 
-	A.array[4] = 4;
+	A->array[3] = 2;
 
-	A.array[5] = -1;
+	A->array[4] = 4;
 
-	A.array[6] = 1;
+	A->array[5] = -1;
 
-	A.array[7] = 1;
+	A->array[6] = 1;
 
-	A.array[8] = -6;
+	A->array[7] = 1;
 
-	PrintMatrix(&A);
+	A->array[8] = -6;
 
-	B = (MatrixTranspose(&A));
+	B->array[0] = 2;
 
+	B->array[1] = 5;
+
+	B->array[2] = 0;
+	//PrintMatrix(A);
+
+	//MatrixTranspose(A,B);
+	MatrixMultibyMatrix(A, B, C);
+	PrintMatrix(A);
 	PrintMatrix(B);
+	PrintMatrix(C);
+
+	//PrintMatrix(B);
 
 	getchar();
 	return 0;
