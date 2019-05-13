@@ -11,6 +11,8 @@ Bool IsNullMatrix(const Matrix* matrix);
 
 void DestroyMatrix(Matrix* matrix);
 
+int DestoryVectorPoint(MatrixType*** temp, unsigned row, unsigned height);
+
 unsigned MatrixCapacity(const Matrix* matrix);
 
 MatrixType MatrixNorm2(const Matrix* matrix);
@@ -40,3 +42,24 @@ int MatrixMultibyMatrix(const Matrix* A, const Matrix* B, Matrix* C);
 int MatrixCopy(const Matrix* matrix, Matrix* C);
 
 int MatrixMultibyConst(const Matrix* matrix, Matrix* C, MatrixType con);
+
+int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I);
+
+MatrixType*** MatrixToVector(const Matrix* matrix, ElementType e);
+
+int BuildVector(Vector* vector, unsigned n);
+
+int DestroyVector(Vector* vector);
+
+Bool IsNullVector(const Vector* vector);
+
+int VectorAddByVector(const Vector* A, const Vector* B, Vector* C);
+
+int VectorSubstractVector(const Vector* A, const Vector* B, Vector* C);
+
+VectorType VectorDotProduct(const Vector* A, const Vector* B);
+
+VectorType VectorNorm(const Vector* A);
+
+int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons);
+

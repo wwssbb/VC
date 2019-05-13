@@ -129,7 +129,7 @@ void DestroyMatrix(Matrix *matrix)
 
 
 	matrix->row = matrix->column = matrix->height = 0;
-
+	matrix = NULL;
 }
 
 
@@ -854,13 +854,13 @@ int MatrixTranspose(const Matrix* matrix, Matrix* C)
 {
 	BuildMatrix(C, matrix->row, matrix->column, matrix->height);
 
-	for (unsigned i = 1; i <= matrix->height; i++)
+	for (unsigned  i=0 ; i < matrix->height; i++)
 	{
 		for (unsigned j = 0; j < matrix->row; j++)
 		{
 			for (unsigned k = 0; k < C->row; k++)
 			{
-					C->array[i* k *(C->column) + j] = matrix->array[i*j*(matrix->column)+k];
+					C->array[i * C->row * C->column + k *(C->column) + j] = matrix->array[i* matrix->row * matrix->column + j*(matrix->column)+k];
 			}
 		}
 	}
@@ -885,7 +885,7 @@ int MatrixAdd(const Matrix* A, const Matrix*B, Matrix* C)
 			unsigned size = A->row * A->column * A->height;			
 			BuildMatrix(C, A->row, A->column, A->height);
 
-			for (int i = 0; i < size; i++)
+			for (unsigned i = 0; i < size; i++)
 			{
 				C->array[i] = A->array[i] + B->array[i];
 			}
@@ -913,7 +913,7 @@ int MatrixSubstract(const Matrix* A, const Matrix*B, Matrix* C)
 			unsigned size = A->row * A->column * A->height;
 			BuildMatrix(C, A->row, A->column, A->height);
 
-			for (int i = 0; i < size; i++)
+			for (unsigned i = 0; i < size; i++)
 			{
 				C->array[i] = A->array[i] - B->array[i];
 			}
@@ -944,7 +944,7 @@ int MatrixMultibyMatrix(const Matrix* A,const Matrix* B, Matrix* C)
 			MatrixTranspose(B, B_template);
 			MatrixTranspose(C, C_template);
 
-			for (unsigned h = 1; h <= A->height; h++)
+			for (unsigned h = 0; h < A->height; h++)
 			{
 				for (unsigned i = 0; i < B_template->row; i++)
 				{		
@@ -954,10 +954,10 @@ int MatrixMultibyMatrix(const Matrix* A,const Matrix* B, Matrix* C)
 
 						for (unsigned k = 0; k < B_template->column; k++)
 						{
-							row_template += B_template->array[h*i*B_template->column + k] * A->array[h*j*A->column + k];
+							row_template += B_template->array[h*B_template->row*B_template->column + i*B_template->column + k] * A->array[h*j*A->row*j*A->column + j*A->column + k];
 						}
 
-						C_template->array[h*i*C_template->column+j] = row_template;
+						C_template->array[h*C_template->column*C_template->row + i*C_template->column+j] = row_template;
 	
 					}
 				}
@@ -983,7 +983,7 @@ int MatrixCopy(const Matrix* matrix,Matrix* C)
 		unsigned size = matrix->row * matrix->column * matrix->height;
 		BuildMatrix(C, matrix->row, matrix->column, matrix->height);
 
-		for (int i = 0; i < size; i++)
+		for (unsigned i = 0; i < size; i++)
 		{
 			C->array[i] = matrix->array[i];
 		}
@@ -1003,7 +1003,7 @@ int MatrixMultibyConst(const Matrix* matrix, Matrix* C, MatrixType con)
 		unsigned size = matrix->row * matrix->column * matrix->height;
 		BuildMatrix(C, matrix->row, matrix->column, matrix->height);
 
-		for (int i = 0; i < size; i++)
+		for (unsigned i = 0; i < size; i++)
 		{
 			C->array[i] = matrix->array[i]*con;
 		}
@@ -1011,3 +1011,323 @@ int MatrixMultibyConst(const Matrix* matrix, Matrix* C, MatrixType con)
 
 	return 0;
 }
+
+MatrixType*** MatrixToVector(const Matrix* matrix, ElementType e)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The input matrix is invalid" << endl;
+		return NULL;
+	}
+	else
+	{
+		MatrixType*** temp = (MatrixType***)malloc(sizeof(MatrixType**) * matrix->height);
+
+		for (unsigned i = 0; i < matrix->height; i++)
+		{
+			temp[i] = (MatrixType**)malloc(sizeof(MatrixType*) * matrix->row);
+
+			for (unsigned j = 0; j < matrix->row; j++)
+			{
+				temp[i][j] = (MatrixType*)malloc(sizeof(MatrixType)*matrix->column);
+
+				if (0 == (int)e)
+				{
+					for (unsigned k = 0; k < matrix->column; k++)
+					{
+						temp[i][j][k] = 0;
+					}
+				}
+				else if (1 == (int)e)
+				{
+					for (unsigned k = 0; k < matrix->column; k++)
+					{
+						temp[i][j][k] = matrix->array[i*matrix->row*matrix->column + j* matrix->column+k];
+					}
+				}
+			}
+		}
+		return temp;
+	}
+}
+
+int BuildVector(Vector* vector, unsigned n)
+{
+	vector->length = n;
+	vector->array = (VectorType *)malloc(sizeof(VectorType)*n);
+
+	return 0;
+}
+
+Bool IsNullVector(const Vector* vector)
+
+{
+	unsigned size = vector->length;
+
+	if (size <= 0 || vector->array == NULL)
+
+	{
+		return True;
+	}
+
+	return False;
+}
+
+int DestroyVector(Vector* vector)
+{
+	if (!IsNullVector(vector))
+	{
+		free(vector->array);
+		vector->array = NULL;
+	}
+	vector->length = 0;
+	vector = NULL;
+
+	return 0;
+}
+
+int DestoryVectorPoint(MatrixType*** temp, unsigned row, unsigned height)
+{
+	for (unsigned i = 0; i < height; i++)
+	{
+		for (unsigned j = 0; j < row; j++)
+		{
+			free(temp[i][j]);
+			temp[i][j] = NULL;
+		}
+		free(temp[i]);
+		temp[i] = NULL;
+	}
+	free(temp);
+	temp = NULL;
+
+	return 0;
+}
+
+int VectorAddByVector(const Vector* A, const Vector* B, Vector* C)
+{
+	if (IsNullVector(A) || IsNullVector(B))
+	{
+		cout << "The input vectors are invalid" << endl;
+	}
+	else
+	{
+		if (A->length != B->length)
+		{
+			cout << "The size of the input vectors could not match each other." << endl;
+		}
+		else
+		{
+			BuildVector(C, A->length);
+
+			for (unsigned i = 0; i < A->length; i++)
+			{
+				C->array[i] = A->array[i] + B->array[i];
+			}
+		}
+	}
+
+	return 0;
+}
+
+int VectorSubstractVector(const Vector* A, const Vector* B, Vector* C)
+{
+	if (IsNullVector(A) || IsNullVector(B))
+	{
+		cout << "The input vectors are invalid" << endl;
+	}
+	else
+	{
+		if (A->length != B->length)
+		{
+			cout << "The size of the input vectors could not match each other." << endl;
+		}
+		else
+		{
+			BuildVector(C, A->length);
+
+			for (unsigned i = 0; i < A->length; i++)
+			{
+				C->array[i] = A->array[i] - B->array[i];
+			}
+		}
+	}
+
+	return 0;
+}
+
+VectorType VectorDotProduct(const Vector* A, const Vector* B)
+{
+	if (IsNullVector(A) || IsNullVector(B))
+	{
+		cout << "The input vectors are invalid" << endl;
+		return 0.0;
+	}
+	else
+	{
+		if (A->length != B->length)
+		{
+			cout << "The size of the input vectors could not match each other." << endl;
+			return 0.0;
+		}
+		else
+		{
+			VectorType C = 0.0;
+			for (unsigned i = 0; i < A->length; i++)
+			{
+				C += A->array[i] * B->array[i];
+			}
+
+			return C;
+		}
+	}
+}
+
+VectorType VectorNorm(const Vector* A)
+{
+	if (IsNullVector(A))
+	{
+		cout << "The input vectors are invalid" << endl;
+		return 0.0;
+	}
+	else
+	{
+		VectorType C = 0.0;
+		for (unsigned i = 0; i < A->length; i++)
+		{
+			C += A->array[i] * A->array[i];
+		}
+		C = sqrt(C);
+
+		return C;
+	}
+}
+
+int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons)
+{
+	if (IsNullVector(A))
+	{
+		cout << "The input vectors are invalid" << endl;
+	}
+	else
+	{
+		BuildVector(C, A->length);
+
+		for (unsigned i = 0; i < A->length; i++)
+		{
+			C->array[i] = A->array[i] * cons;
+		}
+	}
+
+	return 0;
+}
+
+
+int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The input matrix is invalid" << endl;
+	}
+	else
+	{
+		if (matrix->column != matrix->row)
+		{
+			cout << "The the input matrix is not a square." << endl;
+		}
+		else
+		{
+			unsigned size = matrix->row * matrix->column * matrix->height;
+			BuildMatrix(I, matrix->row, matrix->column, matrix->height);
+
+			//这里也可以不用构造double***，直接矩阵转置后for循环赋值也可以，只是这么写比较直观一些
+			MatrixType***temp1 = MatrixToVector(matrix, Element);
+			MatrixType***temp2 = MatrixToVector(matrix, Zero);
+
+			for (unsigned i = 0; i < matrix->height; i++)
+			{
+				Vector** DividedByVector = (Vector**)malloc(sizeof(Vector*) * matrix->column);
+				
+				for (unsigned n = 0; n < matrix->column; n++)
+				{
+					DividedByVector[n] = new Vector;
+					BuildVector(DividedByVector[n], matrix->row);
+				}
+
+				for (unsigned j = 0; j < matrix->column; j++)
+				{
+					for (unsigned k = 0; k < matrix->row; k++)
+					{
+						DividedByVector[j]->array[k] = temp1[i][k][j];
+					}
+				}
+
+				for (unsigned k = 0; k < matrix->row; k++)
+				{
+					temp2[i][k][0] =DividedByVector[0]->array[k];
+				}
+
+				for (unsigned j = 1; j < matrix->column; j++)
+				{
+					for (int m = (j - 1); m >= 0; m--)
+					{
+						for (unsigned k = 0; k < matrix->row; k++)
+						{
+							temp2[i][k][j] += VectorDotProduct(DividedByVector[j], DividedByVector[m]) / VectorDotProduct(DividedByVector[m], DividedByVector[m]) * DividedByVector[m]->array[k];	
+
+						}
+					}
+
+					for (unsigned k = 0; k < matrix->row; k++)
+					{
+						DividedByVector[j]->array[k] = DividedByVector[j]->array[k] - temp2[i][k][j];
+
+						temp2[i][k][j] = DividedByVector[j]->array[k];
+					}
+				}
+				
+				Vector* norm = new Vector;
+				BuildVector(norm, matrix->row);
+
+				for (unsigned j = 0; j < matrix->column; j++)
+				{
+					for (unsigned k = 0; k < matrix->row; k++)
+					{						
+						norm->array[k] = temp2[i][k][j];
+					}
+
+					MatrixType div = VectorNorm(norm);
+
+					for (unsigned k = 0; k < matrix->row; k++)
+					{
+						temp2[i][k][j] = temp2[i][k][j]/div;
+					}
+
+				}
+				DestroyVector(norm);
+
+				for (unsigned k = 0; k < matrix->row; k++)
+				{
+					for (unsigned j = 0; j < matrix->column; j++)
+					{
+						I->array[i*matrix->column*matrix->row + k * matrix->column + j] = temp2[i][k][j];
+					}
+				}
+
+				for (unsigned n = 0; n < matrix->column; n++)
+				{
+					DestroyVector(DividedByVector[n]);
+				}
+				free(DividedByVector);
+				DividedByVector = NULL;
+			}
+
+			DestoryVectorPoint(temp1,matrix->row,matrix->height);
+			DestoryVectorPoint(temp2, matrix->row, matrix->height);
+
+		}
+	}
+
+	return 0;
+}
+

@@ -15,9 +15,22 @@ typedef enum
 
 typedef double MatrixType;
 
+typedef double VectorType;
+
 typedef struct
 {
 	unsigned row, column, height;
 	MatrixType* array;
 }Matrix;
 
+typedef struct
+{
+	unsigned length;
+	VectorType* array;
+}Vector;
+
+typedef enum
+{
+	Zero = 0,
+	Element = 1,
+}ElementType;

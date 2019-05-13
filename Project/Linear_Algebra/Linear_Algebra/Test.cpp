@@ -1,10 +1,19 @@
 #include"Function.h"
 #include"Variable.h"
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+
+#ifdef _DEBUG
+#ifndef DBG_NEW
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#define new DBG_NEW
+#endif
+#endif  // _DEBUG
 
 int main()
 
 {
-
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF || _CRTDBG_LEAK_CHECK_DF);
 	//const unsigned NUM = 50; //最大迭代次数
 	//unsigned N = 3;
 
@@ -141,51 +150,88 @@ int main()
 
 
 
-	unsigned N = 3;
+	unsigned N = 10;
 
 	Matrix* A=new Matrix;
 
-	Matrix* B=new Matrix;
+	Matrix* I=new Matrix;
 
-	Matrix* C = new Matrix;
+	//Matrix* B=new Matrix;
 
-	SetMatrixSize(A, N, N, 1);
-	SetMatrixSize(B, 3, 1, 1);
+	//Matrix* C = new Matrix;
 
-	A->array[0] = -1;
+	SetMatrixSize(A, 12, 12, 1);
+	//SetMatrixSize(B, 3, 1, 1);
 
-	A->array[1] = 2;
+	//A->array[0] = -1;
 
-	A->array[2] = 1;
+	//A->array[1] = 2;
 
-	A->array[3] = 2;
+	//A->array[2] = 1;
 
-	A->array[4] = 4;
+	//A->array[3] = 2;
 
-	A->array[5] = -1;
+	//A->array[4] = 4;
 
-	A->array[6] = 1;
+	//A->array[5] = -1;
 
-	A->array[7] = 1;
+	//A->array[6] = 1;
 
-	A->array[8] = -6;
+	//A->array[7] = 1;
 
-	B->array[0] = 2;
+	//A->array[8] = -6;
 
-	B->array[1] = 5;
 
-	B->array[2] = 0;
+	//A->array[0] = 1;
+
+	//A->array[1] = -1;
+
+	//A->array[2] = 1;
+
+	//A->array[3] = -1;
+
+	//A->array[4] = 1;
+
+	//A->array[5] = 1;
+
+	//A->array[6] = 0;
+
+	//A->array[7] = 1;
+
+	//A->array[8] = 1;
+
+	for (unsigned i = 0; i < N*N; i++)
+	{
+		A->array[i] = rand();
+	}
+
+
+
+	//B->array[0] = 2;
+
+	//B->array[1] = 5;
+
+	//B->array[2] = 0;
 	//PrintMatrix(A);
 
 	//MatrixTranspose(A,B);
-	MatrixMultibyMatrix(A, B, C);
+	//MatrixMultibyMatrix(A, B, C);
 	PrintMatrix(A);
-	PrintMatrix(B);
-	PrintMatrix(C);
+	MatrixSchmitOrthogonal(A, I);
+	PrintMatrix(I);
 
+	DestroyMatrix(A);
+	A = NULL;
+	DestroyMatrix(I);
+	I = NULL;
 	//PrintMatrix(B);
-
+	//PrintMatrix(C);
+	//DestroyMatrix(B);
+	//DestroyMatrix(C);
+	
 	getchar();
+	_CrtDumpMemoryLeaks();
+	
 	return 0;
 
 }
