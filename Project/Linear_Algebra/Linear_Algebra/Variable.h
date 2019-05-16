@@ -34,3 +34,16 @@ typedef enum
 	Zero = 0,
 	Element = 1,
 }ElementType;
+
+typedef enum
+{
+	OrthogonalMatrix,
+	NonOrthogonalMatrix,
+	LinearCorrelationMatrix,
+	NonLinearCorrelationMatrix,
+	InvertibleMatrix,
+	UnInvertibleMatrix,
+	ZeroDeterminant,
+	NonZeroDeterminant,
+
+}MatrixDefinition;

@@ -15,7 +15,7 @@ int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF || _CRTDBG_LEAK_CHECK_DF);
 	//const unsigned NUM = 50; //最大迭代次数
-	//unsigned N = 3;
+	/*unsigned N = 2;*/
 
 	//unsigned k;
 
@@ -31,8 +31,8 @@ int main()
 
 	////分配内存
 
-	//SetMatrixSize(&A, N, N, 1);
-
+	/*SetMatrixSize(&A, N, N, 1);
+*/
 	//SetMatrixSize(&Q, A.row, A.column, A.height);
 
 	//SetMatrixSize(&R, A.row, A.column, A.height);
@@ -150,24 +150,26 @@ int main()
 
 
 
-	unsigned N = 10;
+	unsigned N = 15;
 
 	Matrix* A=new Matrix;
 
 	Matrix* I=new Matrix;
 
+	Matrix* D = new Matrix;
 	//Matrix* B=new Matrix;
 
 	//Matrix* C = new Matrix;
 
-	SetMatrixSize(A, 12, 12, 1);
+	SetMatrixSize(A, N, N, 1);
+	//double* determinant = new double[N] {};
 	//SetMatrixSize(B, 3, 1, 1);
 
-	//A->array[0] = -1;
+	//A->array[0] = 1;
 
-	//A->array[1] = 2;
+	//A->array[1] = 1;
 
-	//A->array[2] = 1;
+	//A->array[2] = -1;
 
 	//A->array[3] = 2;
 
@@ -184,21 +186,45 @@ int main()
 
 	//A->array[0] = 1;
 
-	//A->array[1] = -1;
+	//A->array[1] = 2;
 
-	//A->array[2] = 1;
+	//A->array[2] = 3;
 
-	//A->array[3] = -1;
+	//A->array[3] = 4;
 
-	//A->array[4] = 1;
+	//A->array[4] = 2;
 
-	//A->array[5] = 1;
+	//A->array[5] = 3;
 
-	//A->array[6] = 0;
+	//A->array[6] = 4;
 
 	//A->array[7] = 1;
 
-	//A->array[8] = 1;
+	//A->array[8] = 3;
+	//A->array[9] = 4;
+
+	//A->array[10] = 1;
+
+	//A->array[11] = 2;
+
+	//A->array[12] = 4;
+
+	//A->array[13] = 1;
+
+	//A->array[14] = 2;
+
+	//A->array[15] = 3;
+	//A->array[16] = 0;
+	//A->array[17] = 1;
+	//A->array[18] = 1;
+	//A->array[19] = 1;
+	//A->array[20] = 0;
+	//A->array[21] = 0;
+	//A->array[22] = 0;
+	//A->array[23] = 0;
+	//A->array[24] = 1;
+
+
 
 	for (unsigned i = 0; i < N*N; i++)
 	{
@@ -217,17 +243,27 @@ int main()
 	//MatrixTranspose(A,B);
 	//MatrixMultibyMatrix(A, B, C);
 	PrintMatrix(A);
-	MatrixSchmitOrthogonal(A, I);
+	MatrixSchmitOrthogonal(A, I, D);
 	PrintMatrix(I);
+	PrintMatrix(D);
+	//DestroyMatrix(A);
 
+	//MatrixDeterminant(A, determinant);
 	DestroyMatrix(A);
-	A = NULL;
+	//cout << determinant[0] << endl;
+	//A = NULL;
 	DestroyMatrix(I);
-	I = NULL;
+	//I = NULL;
+	DestroyMatrix(D);
 	//PrintMatrix(B);
 	//PrintMatrix(C);
 	//DestroyMatrix(B);
 	//DestroyMatrix(C);
+	//delete determinant;
+	//determinant = NULL;
+
+
+	
 	
 	getchar();
 	_CrtDumpMemoryLeaks();

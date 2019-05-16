@@ -43,7 +43,7 @@ int MatrixCopy(const Matrix* matrix, Matrix* C);
 
 int MatrixMultibyConst(const Matrix* matrix, Matrix* C, MatrixType con);
 
-int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I);
+int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D);
 
 MatrixType*** MatrixToVector(const Matrix* matrix, ElementType e);
 
@@ -62,4 +62,6 @@ VectorType VectorDotProduct(const Vector* A, const Vector* B);
 VectorType VectorNorm(const Vector* A);
 
 int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons);
+
+int MatrixDeterminant(const Matrix* matrix, double* determinant);
 

@@ -1223,7 +1223,7 @@ int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons)
 }
 
 
-int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I)
+int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D)
 {
 	if (IsNullMatrix(matrix))
 	{
@@ -1239,15 +1239,17 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I)
 		{
 			unsigned size = matrix->row * matrix->column * matrix->height;
 			BuildMatrix(I, matrix->row, matrix->column, matrix->height);
+			BuildMatrix(D, matrix->row, matrix->column, matrix->height);
 
 			//这里也可以不用构造double***，直接矩阵转置后for循环赋值也可以，只是这么写比较直观一些
 			MatrixType***temp1 = MatrixToVector(matrix, Element);
 			MatrixType***temp2 = MatrixToVector(matrix, Zero);
+			MatrixType***temp3 = MatrixToVector(matrix, Zero);
 
 			for (unsigned i = 0; i < matrix->height; i++)
 			{
 				Vector** DividedByVector = (Vector**)malloc(sizeof(Vector*) * matrix->column);
-				
+						
 				for (unsigned n = 0; n < matrix->column; n++)
 				{
 					DividedByVector[n] = new Vector;
@@ -1256,6 +1258,8 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I)
 
 				for (unsigned j = 0; j < matrix->column; j++)
 				{
+					temp3[i][j][j] = 1;
+
 					for (unsigned k = 0; k < matrix->row; k++)
 					{
 						DividedByVector[j]->array[k] = temp1[i][k][j];
@@ -1274,20 +1278,22 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I)
 						for (unsigned k = 0; k < matrix->row; k++)
 						{
 							temp2[i][k][j] += VectorDotProduct(DividedByVector[j], DividedByVector[m]) / VectorDotProduct(DividedByVector[m], DividedByVector[m]) * DividedByVector[m]->array[k];	
-
+							temp3[i][m][j] = VectorDotProduct(DividedByVector[j], DividedByVector[m]) / VectorDotProduct(DividedByVector[m], DividedByVector[m]);
 						}
 					}
 
 					for (unsigned k = 0; k < matrix->row; k++)
 					{
 						DividedByVector[j]->array[k] = DividedByVector[j]->array[k] - temp2[i][k][j];
-
 						temp2[i][k][j] = DividedByVector[j]->array[k];
 					}
 				}
 				
 				Vector* norm = new Vector;
 				BuildVector(norm, matrix->row);
+
+				unsigned rowindex = 0;
+				MatrixType div = 0.0;
 
 				for (unsigned j = 0; j < matrix->column; j++)
 				{
@@ -1296,12 +1302,19 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I)
 						norm->array[k] = temp2[i][k][j];
 					}
 
-					MatrixType div = VectorNorm(norm);
+					div = VectorNorm(norm);
 
 					for (unsigned k = 0; k < matrix->row; k++)
 					{
-						temp2[i][k][j] = temp2[i][k][j]/div;
+						temp2[i][k][j] = temp2[i][k][j] / div;
 					}
+
+					for (unsigned q = 0; q < matrix->column; q++)
+					{
+						temp3[i][rowindex][q] = temp3[i][rowindex][q] * div;
+					}
+
+					rowindex++;
 
 				}
 				DestroyVector(norm);
@@ -1311,6 +1324,7 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I)
 					for (unsigned j = 0; j < matrix->column; j++)
 					{
 						I->array[i*matrix->column*matrix->row + k * matrix->column + j] = temp2[i][k][j];
+						D->array[i*matrix->column*matrix->row + k * matrix->column + j] = temp3[i][k][j];
 					}
 				}
 
@@ -1324,6 +1338,7 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I)
 
 			DestoryVectorPoint(temp1,matrix->row,matrix->height);
 			DestoryVectorPoint(temp2, matrix->row, matrix->height);
+			DestoryVectorPoint(temp3, matrix->row, matrix->height);
 
 		}
 	}
@@ -1331,3 +1346,103 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I)
 	return 0;
 }
 
+int MatrixDeterminant(const Matrix* matrix, double* determinant)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The input matrix is invalid" << endl;
+	}
+	else
+	{
+		if (matrix->column != matrix->row)
+		{
+			cout << "The the input matrix is not a square." << endl;
+		}
+		else
+		{	
+			for (unsigned i = 0; i < matrix->height; i++)
+			{		
+				int index = 1;
+				double sum = 1.0;
+				MatrixType***temp1 = MatrixToVector(matrix, Element);
+				Vector* vectemp = new Vector;
+				BuildVector(vectemp, matrix->row);
+				unsigned goon = 1;
+
+				for (unsigned j = 0; j < matrix->row; j++)
+				{
+					if (temp1[i][j][j] == 0)
+					{
+						for (unsigned m = j + 1; m <= matrix->column; m++)
+						{
+							if (m < matrix->column)
+							{
+								if (temp1[i][j][m] == 0)
+								{
+									index *= -1;
+								}
+								else
+								{
+									for (unsigned w = 0; w < matrix->row; w++)
+									{
+										vectemp->array[w] = temp1[i][w][j];
+										temp1[i][w][j] = temp1[i][w][m];
+										temp1[i][w][m] = vectemp->array[w];
+									}
+									index *= -1;
+									break;
+								}
+							}
+							else
+							{
+								sum = 0.0;
+								goon = 0;
+								break;
+							}
+						}
+					}
+
+					if(goon)
+					{
+						double temvar = 0.0;
+						for (unsigned h = j + 1; h < matrix->row; h++)
+						{
+							temvar = temp1[i][h][j] / temp1[i][j][j];
+							for (unsigned k = 0; k < matrix->column; k++)
+							{
+								temp1[i][h][k] = temp1[i][h][k] - temvar * temp1[i][j][k];
+							}
+						}
+						
+					}
+				}
+
+				for (unsigned l = 0; l < matrix->row; l++)
+				{
+					sum *= temp1[i][l][l];
+				}
+				sum=sum * index;
+				determinant[i] = sum;
+
+				//for (unsigned r = 0; r < matrix->row; r++)
+				//{
+				//	for (unsigned y = 0; y < matrix->column; y++)
+				//	{
+				//		
+				//		cout << temp1[i][r][y] << " ";
+				//	}
+
+				//	cout << endl;
+				//}
+				//getchar();
+
+				DestroyVector(vectemp);
+				DestoryVectorPoint(temp1, matrix->row, matrix->height);
+				
+			}
+		}
+	}
+
+	return 0;
+
+}
