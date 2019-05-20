@@ -51,6 +51,12 @@ int BuildVector(Vector* vector, unsigned n);
 
 int DestroyVector(Vector* vector);
 
+MatrixType** Build2DimensionPointer(unsigned row, unsigned column);
+
+int Destory2DimensionPointer(MatrixType** temp, unsigned row);
+
+MatrixType*** Build3DimensionPointer(unsigned row, unsigned column, unsigned height);
+
 Bool IsNullVector(const Vector* vector);
 
 int VectorAddByVector(const Vector* A, const Vector* B, Vector* C);
@@ -65,3 +71,4 @@ int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons);
 
 int MatrixDeterminant(const Matrix* matrix, double* determinant);
 
+int RealQR(const Matrix* matrix, Matrix* Q, Matrix* R);

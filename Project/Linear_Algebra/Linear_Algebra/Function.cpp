@@ -1051,10 +1051,69 @@ MatrixType*** MatrixToVector(const Matrix* matrix, ElementType e)
 	}
 }
 
+
+MatrixType** Build2DimensionPointer(unsigned row, unsigned column)
+{
+	MatrixType** temp = (MatrixType**)malloc(sizeof(MatrixType*)*row);
+
+	for (unsigned i = 0; i < row; i++)
+	{
+		temp[i] = (MatrixType*)malloc(sizeof(MatrixType)*column);
+
+		for (unsigned j = 0; j < column; j++)
+		{
+			temp[i][j] = 0.0;
+		}
+	}
+
+	return temp;
+}
+
+int Destory2DimensionPointer(MatrixType** temp, unsigned row)
+{
+	for (unsigned i = 0; i < row; i++)
+	{
+		free(temp[i]);
+		temp[i] = NULL;
+	}
+	free(temp);
+	temp = NULL;
+
+	return 0;
+}
+
+MatrixType*** Build3DimensionPointer(unsigned row, unsigned column,unsigned height)
+{
+	MatrixType*** temp = (MatrixType***)malloc(sizeof(MatrixType**)*height);
+
+	for (unsigned i = 0; i < height; i++)
+	{
+		temp[i] = (MatrixType**)malloc(sizeof(MatrixType*)*row);
+
+		for (unsigned j = 0; j < row; j++)
+		{
+			temp[i][j] = (MatrixType*)malloc(sizeof(MatrixType)*column);
+
+			for (unsigned k = 0; k < column; k++)
+			{
+				temp[i][j][k] = 0.0;
+			}
+
+		}
+	}
+
+	return temp;
+}
+
+
 int BuildVector(Vector* vector, unsigned n)
 {
 	vector->length = n;
 	vector->array = (VectorType *)malloc(sizeof(VectorType)*n);
+	for (unsigned i = 0; i < vector->length; i++)
+	{
+		vector->array[i] = 0.0;
+	}
 
 	return 0;
 }
@@ -1316,7 +1375,8 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D)
 
 					rowindex++;
 
-				}
+				}+-
+					+
 				DestroyVector(norm);
 
 				for (unsigned k = 0; k < matrix->row; k++)
@@ -1424,17 +1484,17 @@ int MatrixDeterminant(const Matrix* matrix, double* determinant)
 				sum=sum * index;
 				determinant[i] = sum;
 
-				//for (unsigned r = 0; r < matrix->row; r++)
-				//{
-				//	for (unsigned y = 0; y < matrix->column; y++)
-				//	{
-				//		
-				//		cout << temp1[i][r][y] << " ";
-				//	}
-
-				//	cout << endl;
-				//}
-				//getchar();
+				/*For testing the transform result.
+				for (unsigned r = 0; r < matrix->row; r++)
+				{
+					for (unsigned y = 0; y < matrix->column; y++)
+					{
+						
+						cout << temp1[i][r][y] << " ";
+					}
+					cout << endl;
+				}
+				getchar();*/
 
 				DestroyVector(vectemp);
 				DestoryVectorPoint(temp1, matrix->row, matrix->height);
@@ -1445,4 +1505,332 @@ int MatrixDeterminant(const Matrix* matrix, double* determinant)
 
 	return 0;
 
+}
+
+int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The input matrix is invalid" << endl;
+	}
+	else
+	{
+		unsigned row = 0;
+		unsigned column = 0;
+
+		if (matrix->column >= matrix->row)
+		{
+			cout << "." << endl;
+			row = matrix->row;
+			column = matrix->row;
+		}
+		else if (matrix->column < matrix->row)
+		{
+			cout << "." << endl;
+			column = matrix->column;
+			row = matrix->row;
+		}
+
+		BuildMatrix(Q, row, row, matrix->height);
+		BuildMatrix(R, row, row, matrix->height);
+
+		MatrixType***temp1 = MatrixToVector(matrix, Element);
+		MatrixType***temp2 = MatrixToVector(R, Zero);
+		MatrixType***temp3 = MatrixToVector(Q, Zero);
+		//MatrixType***htemp = Build3DimensionPointer(row,row,column);
+
+		for (unsigned i = 0; i < matrix->height; i++)
+		{
+			Vector** DividedByVector = (Vector**)malloc(sizeof(Vector*) * column);
+
+			for (unsigned n = 0; n < column; n++)
+			{
+				DividedByVector[n] = new Vector;
+				BuildVector(DividedByVector[n], row);
+			}
+
+			for (unsigned j = 0; j < column; j++)
+			{
+				for (unsigned k = 0; k < row; k++)
+				{
+					DividedByVector[j]->array[k] = temp1[i][k][j];
+				}
+			}
+
+			//for (unsigned w = 0; w < column; w++)
+			//{
+			//	for (unsigned ww = 0; ww < row; ww++)
+			//	{
+			//		htemp[w][ww][ww] = 1;
+			//	}
+			//}
+
+			unsigned num = row;
+			unsigned t = 0;
+
+			MatrixType** tempHI = Build2DimensionPointer(row, row);
+			for (unsigned hi = 0; hi < row; hi++)
+			{
+				tempHI[hi][hi] = 1;
+			}
+
+			for (unsigned j = 0; j < column-1; j++)
+			{
+
+				Vector* norm = new Vector;
+				BuildVector(norm, num);
+				norm->array[0] = 1;
+
+				Vector* DividedByVectortemp = new Vector;
+				BuildVector(DividedByVectortemp, num);
+
+				//
+				//for (unsigned q = 0; q < row; q++)
+				//{
+				//	cout << DividedByVector[j]->array[q] << " ";
+				//}
+				//cout << endl;
+				//getchar();
+
+				unsigned tt = 0;
+				for (unsigned q = t; q < row; q++)
+				{
+					DividedByVectortemp->array[tt] = DividedByVector[j]->array[q];
+					tt++;
+				}
+
+				//
+				//for (int nu = 0; nu < num; nu++)
+				//{
+				//	cout << norm->array[nu] <<" "<< DividedByVectortemp->array[nu]<<endl;
+				//}
+				//getchar();
+
+
+				Vector* tempnorm = new Vector;
+				VectorMultibyConst(norm, tempnorm, VectorNorm(DividedByVectortemp));
+
+				//
+				//for (int nu = 0; nu < num; nu++)
+				//{
+				//	cout << tempnorm->array[nu] << endl;
+				//}
+				//getchar();
+
+
+				Vector* tempnorm2 = new Vector;
+				VectorSubstractVector(DividedByVectortemp, tempnorm, tempnorm2);
+
+				//
+				//for (int nu = 0; nu < num; nu++)
+				//{
+				//	cout << tempnorm2->array[nu] << endl;
+				//}
+				//getchar();
+
+
+				Vector* tempnorm3 = new Vector;
+				VectorMultibyConst(tempnorm2, tempnorm3, 1 / VectorNorm(tempnorm2));
+
+				//
+				//for (int nu = 0; nu < num; nu++)
+				//{
+				//	cout << tempnorm3->array[nu] << " " << DividedByVectortemp->array[nu] << endl;
+				//}
+				//getchar();
+
+
+				MatrixType** tempI = Build2DimensionPointer(tempnorm3->length, tempnorm3->length);
+
+				MatrixType** tempW = Build2DimensionPointer(tempnorm3->length, tempnorm3->length);
+
+				MatrixType** tempR = Build2DimensionPointer(row, column);
+
+				MatrixType** tempH= Build2DimensionPointer(row, row);
+
+				for (unsigned q = 0; q < row; q++)
+				{
+					tempH[q][q] = 1;
+				}
+
+				for (unsigned q = 0; q < tempnorm3->length; q++)
+				{
+					for (unsigned p = 0; p < tempnorm3->length; p++)
+					{
+						tempW[p][q] = tempnorm3->array[p] * tempnorm3->array[q];
+					}
+					tempI[q][q] = 1;
+				}
+
+				for (unsigned p = 0; p < num; p++)
+				{
+					for (unsigned q =0 ; q < num; q++)
+					{
+						//htemp[j][t + p][t + q] = tempI[p][q]-2*tempW[p][q];
+						tempH[t + p][t + q]= tempI[p][q] - 2 * tempW[p][q];
+					}
+				}
+
+
+				//
+				//for (unsigned p = 0; p < row; p++)
+				//{
+				//	for (unsigned q = 0; q < row; q++)
+				//	{
+				//		cout << tempHI[p][q] << " ";
+				//	}
+				//	cout << endl;
+				//}
+				//getchar();
+
+
+				//
+				//for (unsigned p = 0; p < row; p++)
+				//{
+				//	for (unsigned q = 0; q < row; q++)
+				//	{
+				//		cout << tempH[p][q] << " ";
+				//	}
+				//	cout << endl;
+				//}
+				//getchar();
+
+
+
+				for (unsigned p = 0; p < row; p++)
+				{					
+					for (unsigned q = 0; q < row; q++)
+					{
+						MatrixType te = 0.0;
+
+						for (unsigned m = 0; m < row; m++)
+						{
+							te += tempHI[q][m] * tempH[m][p];
+						}
+
+						temp3[i][q][p] = te;
+					}
+				}
+
+
+				//
+				//for (unsigned p = 0; p < row; p++)
+				//{
+				//	for (unsigned q = 0; q < row; q++)
+				//	{
+				//		cout << temp3[i][p][q] << " ";
+				//	}
+				//	cout << endl;
+				//}
+				//getchar();
+
+
+				for (unsigned p = 0; p < row; p++)
+				{
+					for (unsigned q = 0; q < row; q++)
+					{
+						tempHI[p][q] = temp3[i][p][q];
+					}
+				}
+
+				//
+				//for (unsigned p = 0; p < row; p++)
+				//{
+				//	for (unsigned q = 0; q < row; q++)
+				//	{
+				//		cout << htemp[j][p][q] << " ";
+				//	}
+				//	cout << endl;
+				//}
+				//getchar();
+
+				for (unsigned p = 0; p < column; p++)
+				{
+					for (unsigned q = 0; q < row; q++)
+					{
+						for (unsigned m = 0; m < row; m++)
+						{
+							tempR[q][p] += tempH[q][m] * DividedByVector[p]->array[m];
+						}				
+					}
+				}
+
+				//
+				//for (unsigned p = 0; p < row; p++)
+				//{
+				//	for (unsigned q = 0; q < column; q++)
+				//	{
+				//		cout << tempR[p][q]<< " ";
+				//	}
+				//	cout << endl;
+				//}
+				//getchar();
+
+				for (unsigned p = 0; p < column; p++)
+				{
+					for (unsigned q = 0; q < row; q++)
+					{
+						DividedByVector[p]->array[q] = tempR[q][p];
+					}
+				}
+
+				//
+				//for (unsigned p = 0; p < row; p++)
+				//{
+				//	for (unsigned q = 0; q < column; q++)
+				//	{
+				//		cout << DividedByVector[p]->array[q] << " ";
+				//	}
+				//	cout << endl;
+				//}
+				//getchar();
+
+				DestroyVector(norm);
+				DestroyVector(DividedByVectortemp);
+				DestroyVector(tempnorm);
+				DestroyVector(tempnorm2);
+				DestroyVector(tempnorm3);
+
+				Destory2DimensionPointer(tempI, tempnorm3->length);
+				Destory2DimensionPointer(tempW, tempnorm3->length);
+				Destory2DimensionPointer(tempR, row);
+				Destory2DimensionPointer(tempH, row);
+
+				t++;
+				num--;
+			}
+			for (unsigned p = 0; p < column; p++)
+			{
+				for (unsigned q = 0; q < row; q++)
+				{
+					temp2[i][q][p] = DividedByVector[p]->array[q];
+				}
+			}
+
+			for (unsigned q = 0; q < row; q++)
+			{
+				for (unsigned p= 0; p < row; p++)
+				{
+					R->array[i*row*row + q * row + p] = temp2[i][q][p];
+					Q->array[i*row*row + q * row + p]= temp3[i][q][p];
+				}
+			}
+
+			for (unsigned p = 0; p < column; p++)
+			{
+				DestroyVector(DividedByVector[p]);
+			}
+			free(DividedByVector);
+			DividedByVector = NULL;
+			Destory2DimensionPointer(tempHI, row);
+
+		}
+
+		DestoryVectorPoint(temp1, matrix->row, matrix->height);
+		DestoryVectorPoint(temp2, row, matrix->height);
+		DestoryVectorPoint(temp3, row, matrix->height);
+		//DestoryVectorPoint(htemp, row, column);
+	}
+
+	return 0;
 }

@@ -150,10 +150,13 @@ int main()
 
 
 
-	unsigned N = 15;
+	unsigned N = 4;
 
 	Matrix* A=new Matrix;
 
+	Matrix* Q = new Matrix;
+
+	Matrix* R = new Matrix;
 	Matrix* I=new Matrix;
 
 	Matrix* D = new Matrix;
@@ -165,23 +168,37 @@ int main()
 	//double* determinant = new double[N] {};
 	//SetMatrixSize(B, 3, 1, 1);
 
-	//A->array[0] = 1;
+	A->array[0] = 1;
 
-	//A->array[1] = 1;
+	A->array[1] = 3;
 
-	//A->array[2] = -1;
+	A->array[2] = 3;
 
-	//A->array[3] = 2;
+	A->array[3] = 4;
 
-	//A->array[4] = 4;
+	A->array[4] = 3;
 
-	//A->array[5] = -1;
+	A->array[5] = 1;
 
-	//A->array[6] = 1;
+	A->array[6] = 2;
 
-	//A->array[7] = 1;
+	A->array[7] = 3;
 
-	//A->array[8] = -6;
+	A->array[8] = 3;
+
+	A->array[9] = 2;
+
+	A->array[10] = 1;
+
+	A->array[11] = 5;
+
+	A->array[12] = 4;
+
+	A->array[13] = 3;
+
+	A->array[14] = 5;
+
+	A->array[15] = 1;
 
 
 	//A->array[0] = 1;
@@ -226,10 +243,10 @@ int main()
 
 
 
-	for (unsigned i = 0; i < N*N; i++)
-	{
-		A->array[i] = rand();
-	}
+	//for (unsigned i = 0; i < N*N; i++)
+	//{
+	//	A->array[i] = rand();
+	//}
 
 
 
@@ -243,18 +260,31 @@ int main()
 	//MatrixTranspose(A,B);
 	//MatrixMultibyMatrix(A, B, C);
 	PrintMatrix(A);
+	RealQR(A, Q, R);
+	PrintMatrix(A);
+	PrintMatrix(R);
+	PrintMatrix(Q);
+	cout << endl;
 	MatrixSchmitOrthogonal(A, I, D);
 	PrintMatrix(I);
 	PrintMatrix(D);
+	getchar();
+	/*MatrixSchmitOrthogonal(A, I, D);*/
+	//PrintMatrix(I);
+	//PrintMatrix(D);
 	//DestroyMatrix(A);
 
 	//MatrixDeterminant(A, determinant);
 	DestroyMatrix(A);
+	DestroyMatrix(R);
+	DestroyMatrix(Q);
+	DestroyMatrix(I);
+	DestroyMatrix(D);
 	//cout << determinant[0] << endl;
 	//A = NULL;
-	DestroyMatrix(I);
+	//DestroyMatrix(I);
 	//I = NULL;
-	DestroyMatrix(D);
+	//DestroyMatrix(D);
 	//PrintMatrix(B);
 	//PrintMatrix(C);
 	//DestroyMatrix(B);
@@ -265,7 +295,7 @@ int main()
 
 	
 	
-	getchar();
+	//getchar();
 	_CrtDumpMemoryLeaks();
 	
 	return 0;
