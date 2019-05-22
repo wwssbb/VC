@@ -72,3 +72,5 @@ int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons);
 int MatrixDeterminant(const Matrix* matrix, double* determinant);
 
 int RealQR(const Matrix* matrix, Matrix* Q, Matrix* R);
+
+int RealGivens(const Matrix* matrix, Matrix* Q, Matrix* R);

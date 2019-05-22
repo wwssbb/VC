@@ -157,6 +157,11 @@ int main()
 	Matrix* Q = new Matrix;
 
 	Matrix* R = new Matrix;
+
+	Matrix* Q1 = new Matrix;
+
+	Matrix* R1 = new Matrix;
+
 	Matrix* I=new Matrix;
 
 	Matrix* D = new Matrix;
@@ -259,13 +264,22 @@ int main()
 
 	//MatrixTranspose(A,B);
 	//MatrixMultibyMatrix(A, B, C);
+	//PrintMatrix(A);
+	RealGivens(A, Q, R);
+	RealQR(A, Q1, R1);
+	MatrixSchmitOrthogonal(A, I, D);
+
 	PrintMatrix(A);
-	RealQR(A, Q, R);
-	PrintMatrix(A);
+	cout << endl;
+
+	PrintMatrix(R1);
+	PrintMatrix(Q1);
+	cout << endl;
+
 	PrintMatrix(R);
 	PrintMatrix(Q);
 	cout << endl;
-	MatrixSchmitOrthogonal(A, I, D);
+
 	PrintMatrix(I);
 	PrintMatrix(D);
 	getchar();
@@ -280,6 +294,8 @@ int main()
 	DestroyMatrix(Q);
 	DestroyMatrix(I);
 	DestroyMatrix(D);
+	DestroyMatrix(R1);
+	DestroyMatrix(Q1);
 	//cout << determinant[0] << endl;
 	//A = NULL;
 	//DestroyMatrix(I);
