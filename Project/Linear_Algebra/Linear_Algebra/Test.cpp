@@ -150,7 +150,7 @@ int main()
 
 
 
-	unsigned N = 4;
+	unsigned N = 5;
 
 	Matrix* A=new Matrix;
 
@@ -165,6 +165,13 @@ int main()
 	Matrix* I=new Matrix;
 
 	Matrix* D = new Matrix;
+
+	Matrix* H = new Matrix;
+
+	Matrix* P = new Matrix;
+
+	Matrix* E = new Matrix;
+	Matrix* EV = new Matrix;
 	//Matrix* B=new Matrix;
 
 	//Matrix* C = new Matrix;
@@ -173,56 +180,56 @@ int main()
 	//double* determinant = new double[N] {};
 	//SetMatrixSize(B, 3, 1, 1);
 
-	A->array[0] = 1;
-
-	A->array[1] = 3;
-
-	A->array[2] = 3;
-
-	A->array[3] = 4;
-
-	A->array[4] = 3;
-
-	A->array[5] = 1;
-
-	A->array[6] = 2;
-
-	A->array[7] = 3;
-
-	A->array[8] = 3;
-
-	A->array[9] = 2;
-
-	A->array[10] = 1;
-
-	A->array[11] = 5;
-
-	A->array[12] = 4;
-
-	A->array[13] = 3;
-
-	A->array[14] = 5;
-
-	A->array[15] = 1;
-
-
 	//A->array[0] = 1;
 
-	//A->array[1] = 2;
+	//A->array[1] = 3;
 
 	//A->array[2] = 3;
 
 	//A->array[3] = 4;
 
-	//A->array[4] = 2;
+	//A->array[4] = 3;
 
-	//A->array[5] = 3;
+	//A->array[5] = 1;
+
+	//A->array[6] = 2;
+
+	//A->array[7] = 3;
+
+	//A->array[8] = 3;
+
+	//A->array[9] = 2;
+
+	//A->array[10] = 1;
+
+	//A->array[11] = 5;
+
+	//A->array[12] = 4;
+
+	//A->array[13] = 3;
+
+	//A->array[14] = 5;
+
+	//A->array[15] = 1;
+
+
+	//A->array[0] = 5;
+
+	//A->array[1] = -3;
+
+	//A->array[2] = 2;
+
+	//A->array[3] = 6;
+
+	//A->array[4] = -4;
+
+	//A->array[5] = 4;
 
 	//A->array[6] = 4;
 
-	//A->array[7] = 1;
+	//A->array[7] = -4;
 
-	//A->array[8] = 3;
+	//A->array[8] = 5;
 	//A->array[9] = 4;
 
 	//A->array[10] = 1;
@@ -248,10 +255,10 @@ int main()
 
 
 
-	//for (unsigned i = 0; i < N*N; i++)
-	//{
-	//	A->array[i] = rand();
-	//}
+	for (unsigned i = 0; i < N*N; i++)
+	{
+		A->array[i] = rand();
+	}
 
 
 
@@ -265,6 +272,16 @@ int main()
 	//MatrixTranspose(A,B);
 	//MatrixMultibyMatrix(A, B, C);
 	//PrintMatrix(A);
+	//RealHessenBurg(A, H, P);
+	EginValue(A, E,EV);
+	PrintMatrix(A);
+	PrintMatrix(E);
+	//PrintMatrix(EV);
+	//PrintMatrix(H);
+	//PrintMatrix(P);
+	cout << endl;
+	getchar();
+
 	RealGivens(A, Q, R);
 	RealQR(A, Q1, R1);
 	MatrixSchmitOrthogonal(A, I, D);
@@ -296,6 +313,10 @@ int main()
 	DestroyMatrix(D);
 	DestroyMatrix(R1);
 	DestroyMatrix(Q1);
+	DestroyMatrix(H);
+	DestroyMatrix(P);
+	DestroyMatrix(E);
+	DestroyMatrix(EV);
 	//cout << determinant[0] << endl;
 	//A = NULL;
 	//DestroyMatrix(I);

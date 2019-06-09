@@ -74,3 +74,7 @@ int MatrixDeterminant(const Matrix* matrix, double* determinant);
 int RealQR(const Matrix* matrix, Matrix* Q, Matrix* R);
 
 int RealGivens(const Matrix* matrix, Matrix* Q, Matrix* R);
+
+int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P);
+
+int EginValue(const Matrix* matrix, Matrix* E, Matrix* EV);
