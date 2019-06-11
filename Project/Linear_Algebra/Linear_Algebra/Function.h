@@ -59,6 +59,12 @@ MatrixType*** Build3DimensionPointer(unsigned row, unsigned column, unsigned hei
 
 Bool IsNullVector(const Vector* vector);
 
+MatrixType VectorAbsMax(Vector* vector);
+
+int VectorCopyToVector(const Vector* A, Vector* B);
+
+int PrintVector(Vector* vector);
+
 int VectorAddByVector(const Vector* A, const Vector* B, Vector* C);
 
 int VectorSubstractVector(const Vector* A, const Vector* B, Vector* C);
@@ -78,3 +84,5 @@ int RealGivens(const Matrix* matrix, Matrix* Q, Matrix* R);
 int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P);
 
 int EginValue(const Matrix* matrix, Matrix* E, Matrix* EV);
+
+int EginVectorReal(const Matrix* matrix, Vector* EV, MatrixType& Lambda);

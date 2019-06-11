@@ -150,7 +150,7 @@ int main()
 
 
 
-	unsigned N = 5;
+	unsigned N = 3;
 
 	Matrix* A=new Matrix;
 
@@ -172,6 +172,10 @@ int main()
 
 	Matrix* E = new Matrix;
 	Matrix* EV = new Matrix;
+
+	Vector* Uk = new Vector;
+	MatrixType Lambda=0.0;
+
 	//Matrix* B=new Matrix;
 
 	//Matrix* C = new Matrix;
@@ -179,6 +183,25 @@ int main()
 	SetMatrixSize(A, N, N, 1);
 	//double* determinant = new double[N] {};
 	//SetMatrixSize(B, 3, 1, 1);
+
+
+	A->array[0] = 1.0;
+
+	A->array[1] = 1.0;
+
+	A->array[2] = 0.5;
+
+	A->array[3] = 1.0;
+
+	A->array[4] = 1.0;
+
+	A->array[5] = 0.25;
+
+	A->array[6] = 0.5;
+
+	A->array[7] = 0.25;
+
+	A->array[8] = 2.0;
 
 	//A->array[0] = 1;
 
@@ -255,10 +278,10 @@ int main()
 
 
 
-	for (unsigned i = 0; i < N*N; i++)
-	{
-		A->array[i] = rand();
-	}
+	//for (unsigned i = 0; i < N*N; i++)
+	//{
+	//	A->array[i] = rand();
+	//}
 
 
 
@@ -273,10 +296,20 @@ int main()
 	//MatrixMultibyMatrix(A, B, C);
 	//PrintMatrix(A);
 	//RealHessenBurg(A, H, P);
-	EginValue(A, E,EV);
+
+
+	EginVectorReal(A, Uk, Lambda);
+
 	PrintMatrix(A);
+	PrintVector(Uk);
+
+	cout << Lambda << endl;
+	getchar();
+
+	EginValue(A, E,EV);
+	//PrintMatrix(A);
 	PrintMatrix(E);
-	//PrintMatrix(EV);
+	PrintMatrix(EV);
 	//PrintMatrix(H);
 	//PrintMatrix(P);
 	cout << endl;
@@ -317,6 +350,9 @@ int main()
 	DestroyMatrix(P);
 	DestroyMatrix(E);
 	DestroyMatrix(EV);
+	DestroyVector(Uk);
+	//delete Lambda;
+	//Lambda = NULL;
 	//cout << determinant[0] << endl;
 	//A = NULL;
 	//DestroyMatrix(I);

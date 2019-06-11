@@ -1106,6 +1106,7 @@ MatrixType*** Build3DimensionPointer(unsigned row, unsigned column,unsigned heig
 }
 
 
+
 int BuildVector(Vector* vector, unsigned n)
 {
 	vector->length = n;
@@ -1119,7 +1120,6 @@ int BuildVector(Vector* vector, unsigned n)
 }
 
 Bool IsNullVector(const Vector* vector)
-
 {
 	unsigned size = vector->length;
 
@@ -1132,6 +1132,39 @@ Bool IsNullVector(const Vector* vector)
 	return False;
 }
 
+int VectorCopyToVector(const Vector* A, Vector* B)
+{
+	if (!IsNullVector(A))
+	{
+		int judge = 1;
+
+		if (IsNullVector(B))
+		{
+			BuildVector(B, A->length);
+		}
+		else if (A->length != B->length)
+		{
+			cout << "The size of two Vectors can not match.";
+			judge = 0;
+		}
+
+		if (judge)
+		{
+			for (unsigned i = 0; i < A->length; i++)
+			{
+				B->array[i] = A->array[i];
+			}
+		}
+
+	}
+	else
+	{
+		cout << "The replicated Vector couldn't be Null." << endl;
+	}
+
+	return 0;
+}
+
 int DestroyVector(Vector* vector)
 {
 	if (!IsNullVector(vector))
@@ -1141,6 +1174,24 @@ int DestroyVector(Vector* vector)
 	}
 	vector->length = 0;
 	vector = NULL;
+
+	return 0;
+}
+
+int PrintVector(Vector* vector)
+{
+	if (!IsNullVector(vector))
+	{
+		for (unsigned i = 0; i < vector->length; i++)
+		{
+			cout << vector->array[i] << "\t";
+		}
+		cout << endl;
+	}
+	else
+	{
+		cout << "The input Vector can't be Null." << endl;
+	}
 
 	return 0;
 }
@@ -1187,6 +1238,32 @@ int VectorAddByVector(const Vector* A, const Vector* B, Vector* C)
 	}
 
 	return 0;
+}
+
+MatrixType VectorAbsMax(const Vector* vector)
+{
+	MatrixType Max = 0.0;
+
+	if (!IsNullVector(vector))
+	{
+		for (unsigned i = 0; i < vector->length; i++)
+		{
+			if (i == 0)
+			{
+				Max = abs(vector->array[i]);
+			}
+			else
+			{
+				abs(vector->array[i]) >= Max ? Max = abs(vector->array[i]) : Max = Max;
+			}
+		}
+	}
+	else
+	{
+		cout << "The input Vector is invalid." << endl;
+	}
+
+	return Max;
 }
 
 int VectorSubstractVector(const Vector* A, const Vector* B, Vector* C)
@@ -2182,11 +2259,6 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 				//}
 				//getchar();
 
-
-
-
-
-
 				for (unsigned p = 0; p < row; p++)
 				{
 					for (unsigned q = 0; q < row; q++)
@@ -2202,7 +2274,6 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 					}
 				}
 
-
 				//
 				//for (unsigned p = 0; p < row; p++)
 				//{
@@ -2213,7 +2284,6 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 				//	cout << endl;
 				//}
 				//getchar();
-
 
 				for (unsigned p = 0; p < row; p++)
 				{
@@ -2374,7 +2444,7 @@ int EginValue(const Matrix* matrix,Matrix* E,Matrix* EV)
 	return 0;
 }
 
-int EginVectorReal(const Matrix* matrix, Vector* EV)
+int EginVectorReal(const Matrix* matrix, Vector* EV, MatrixType& Lambda)
 {
 	if (IsNullMatrix(matrix) || matrix->column != matrix->row)
 	{
@@ -2382,7 +2452,95 @@ int EginVectorReal(const Matrix* matrix, Vector* EV)
 	}
 	else
 	{
+		MatrixType***temp1 = MatrixToVector(matrix, Element);
 
+		BuildVector(EV, matrix->row);
+
+		for (unsigned i = 0; i < matrix->height; i++)
+		{
+			Vector* v = new Vector;
+			BuildVector(v, matrix->row);
+
+			while (1)
+			{
+				for (unsigned t = 0; t < v->length; t++)
+				{
+					v->array[t] = rand();
+					//v->array[t] = 1;
+				}
+
+				if (VectorNorm(v) != 0)
+				{
+					break;
+				}
+			}
+
+			//
+			//PrintVector(v);
+			//getchar();
+
+			for (unsigned times = 0; times < 100; times++)
+			{
+
+				Vector* vn = new Vector;
+				BuildVector(vn, matrix->row);
+
+				for (unsigned j = 0; j < matrix->row; j++)
+				{
+					for (unsigned k = 0; k < matrix->column; k++)
+					{
+						vn->array[j] += temp1[i][j][k] * v->array[k];
+					}
+				}
+
+				//
+				//PrintVector(vn);
+				///getchar();
+
+				//
+				//cout << VectorAbsMax(vn) << endl;
+				//getchar();
+
+				VectorMultibyConst(vn, v, 1 / VectorAbsMax(vn));
+
+				DestroyVector(vn);
+				//
+				//PrintVector(v);
+				//getchar();
+
+				//VectorCopyToVector(vn, v);
+			}
+
+			VectorCopyToVector(v, EV);
+
+			Vector* vn = new Vector;
+			BuildVector(vn, matrix->row);
+
+			for (unsigned j = 0; j < matrix->row; j++)
+			{
+				for (unsigned k = 0; k < matrix->column; k++)
+				{
+					vn->array[j] += temp1[i][j][k] * v->array[k];
+				}
+			}
+
+			//
+			//PrintVector(vn);
+			//PrintVector(v);
+			//getchar();
+
+			VectorMultibyConst(vn, v, 1 / VectorAbsMax(v));
+
+			//
+			//PrintVector(v);
+			//getchar();
+
+			Lambda = VectorAbsMax(v);
+
+			DestroyVector(v);
+			DestroyVector(vn);
+		}
+		DestoryVectorPoint(temp1, matrix->row, matrix->height);
 	}
 
 	return 0;
