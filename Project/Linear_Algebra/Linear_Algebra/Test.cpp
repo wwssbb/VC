@@ -1,5 +1,5 @@
 #include"Function.h"
-#include"Variable.h"
+//#include"Variable.h"
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 
@@ -14,143 +14,11 @@ int main()
 
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF || _CRTDBG_LEAK_CHECK_DF);
-	//const unsigned NUM = 50; //最大迭代次数
-	/*unsigned N = 2;*/
-
-	//unsigned k;
-
-
-
-	//Matrix A, Q, R, temp;
-
-	//Matrix eValue;
-
-
-
-
-
-	////分配内存
-
-	/*SetMatrixSize(&A, N, N, 1);
-*/
-	//SetMatrixSize(&Q, A.row, A.column, A.height);
-
-	//SetMatrixSize(&R, A.row, A.column, A.height);
-
-	//SetMatrixSize(&temp, A.row, A.column, A.height);
-
-	//SetMatrixSize(&eValue, A.row, 1, 1);
-
-
-
-	////A设置为一个简单矩阵
-
-	//A.array[0] = -1;
-
-	//A.array[1] = 2;
-
-	//A.array[2] = 1;
-
-	//A.array[3] = 2;
-
-	//A.array[4] = 4;
-
-	//A.array[5] = -1;
-
-	//A.array[6] = 1;
-
-	//A.array[7] = 1;
-
-	//A.array[8] = -6;
-
-
-
-
-
-	////拷贝A矩阵元素至temp
-
-	//CopyMatrix(&temp, &A, 0);
-
-
-
-	////初始化Q、R所有元素为0
-
-	//SetMatrixZero(&Q);
-
-	//SetMatrixZero(&R);
-
-	////使用QR分解求矩阵特征值
-
-	//for (k = 0; k < NUM; ++k)
-
-	//{
-
-	//	QR(&temp, &Q, &R);
-
-	//	MatrixMultiMatrix(&temp, &R, &Q);
-
-	//}
-
-	////获取特征值，将之存储于eValue
-
-	//for (k = 0; k < temp.column; ++k)
-
-	//{
-
-	//	eValue.array[k] = temp.array[k * temp.column + k];
-
-	//}
-
-
-
-	////对特征值按照降序排序
-
-	//SortVector(&eValue, 1);
-
-
-
-	////根据特征值eValue，原始矩阵求解矩阵特征向量Q
-
-	//Eigenvectors(&Q, &A, &eValue);
-
-
-
-	////打印特征值
-
-	//printf("特征值：");
-
-	//PrintMatrix(&eValue);
-
-
-
-	////打印特征向量
-
-	//printf("特征向量");
-
-	//PrintMatrix(&Q);
-
-
-	//getchar();
-
-	//DestroyMatrix(&A);
-
-	//DestroyMatrix(&R);
-
-	//DestroyMatrix(&Q);
-
-	//DestroyMatrix(&eValue);
-
-	//DestroyMatrix(&temp);
-
-
-
-
-
 	const unsigned NUM = 50; //最大迭代次数
 
+	unsigned N = 6;
 
-
-	unsigned N = 3;
+	unsigned layer = 3;
 
 	Matrix* A=new Matrix;
 
@@ -166,42 +34,48 @@ int main()
 
 	Matrix* D = new Matrix;
 
-	Matrix* H = new Matrix;
+	Vector* determinant=new Vector;
 
-	Matrix* P = new Matrix;
+	BuildVector(determinant, layer);;
 
-	Matrix* E = new Matrix;
-	Matrix* EV = new Matrix;
+	//Matrix* H = new Matrix;
 
-	Vector* Uk = new Vector;
-	MatrixType Lambda=0.0;
+	//Matrix* P = new Matrix;
+
+	//Matrix* E = new Matrix;
+	//Matrix* EV = new Matrix;
+
+	//Vector* Uk = new Vector;
+	//MatrixType Lambda=0.0;
 
 	//Matrix* B=new Matrix;
 
 	//Matrix* C = new Matrix;
 
-	SetMatrixSize(A, N, N, 1);
-	//double* determinant = new double[N] {};
+	//SetMatrixSize(A, N, N, 1);
+	BuildMatrix(A, N, N, layer);
+	//BuildVector(determinant, layer);
+	
 	//SetMatrixSize(B, 3, 1, 1);
 
 
-	A->array[0] = 1.0;
+	//A->array[0] = 1.0;
 
-	A->array[1] = 1.0;
+	//A->array[1] = 1.0;
 
-	A->array[2] = 0.5;
+	//A->array[2] = 0.5;
 
-	A->array[3] = 1.0;
+	//A->array[3] = 1.0;
 
-	A->array[4] = 1.0;
+	//A->array[4] = 1.0;
 
-	A->array[5] = 0.25;
+	//A->array[5] = 0.25;
 
-	A->array[6] = 0.5;
+	//A->array[6] = 0.5;
 
-	A->array[7] = 0.25;
+	//A->array[7] = 0.25;
 
-	A->array[8] = 2.0;
+	//A->array[8] = 2.0;
 
 	//A->array[0] = 1;
 
@@ -278,11 +152,14 @@ int main()
 
 
 
-	//for (unsigned i = 0; i < N*N; i++)
-	//{
-	//	A->array[i] = rand();
-	//}
+	for (unsigned i = 0; i <layer * N * N; i++)
+	{
+		A->array[i] = rand();
+	}
 
+	PrintMatrix(A);
+
+	cout << endl;
 
 
 	//B->array[0] = 2;
@@ -298,59 +175,63 @@ int main()
 	//RealHessenBurg(A, H, P);
 
 
-	EginVectorReal(A, Uk, Lambda);
+	//EginVectorReal(A, Uk, Lambda);
 
-	PrintMatrix(A);
-	PrintVector(Uk);
-
-	cout << Lambda << endl;
-	getchar();
-
-	EginValue(A, E,EV);
 	//PrintMatrix(A);
-	PrintMatrix(E);
-	PrintMatrix(EV);
+	//PrintVector(Uk);
+
+	//cout << Lambda << endl;
+	//getchar();
+
+	//EginValue(A, E,EV);
+	//PrintMatrix(A);
+	//PrintMatrix(E);
+	//PrintMatrix(EV);
 	//PrintMatrix(H);
 	//PrintMatrix(P);
+	//cout << endl;
+	//getchar();
+
+	RealMatrixDeterminant(A, determinant);
+	PrintVector(determinant);
 	cout << endl;
 	getchar();
 
 	RealGivens(A, Q, R);
 	RealQR(A, Q1, R1);
-	MatrixSchmitOrthogonal(A, I, D);
-
-	PrintMatrix(A);
-	cout << endl;
-
-	PrintMatrix(R1);
-	PrintMatrix(Q1);
-	cout << endl;
-
-	PrintMatrix(R);
-	PrintMatrix(Q);
-	cout << endl;
+	RealMatrixSchmitOrthogonal(A, I, D);
 
 	PrintMatrix(I);
 	PrintMatrix(D);
 	getchar();
-	/*MatrixSchmitOrthogonal(A, I, D);*/
-	//PrintMatrix(I);
-	//PrintMatrix(D);
-	//DestroyMatrix(A);
+	cout << endl;
+
+	PrintMatrix(R1);
+	cout << endl;
+	PrintMatrix(Q1);
+	cout << endl;
+	getchar();
+
+	PrintMatrix(R);
+	PrintMatrix(Q);
+	cout << endl;
+	getchar();
+
 
 	//MatrixDeterminant(A, determinant);
 	DestroyMatrix(A);
+	DestroyVector(determinant);
 	DestroyMatrix(R);
 	DestroyMatrix(Q);
 	DestroyMatrix(I);
 	DestroyMatrix(D);
 	DestroyMatrix(R1);
 	DestroyMatrix(Q1);
-	DestroyMatrix(H);
-	DestroyMatrix(P);
-	DestroyMatrix(E);
-	DestroyMatrix(EV);
-	DestroyVector(Uk);
+	//DestroyMatrix(H);
+	//DestroyMatrix(P);
+	//DestroyMatrix(E);
+	//DestroyMatrix(EV);
+	//DestroyVector(Uk);
 	//delete Lambda;
 	//Lambda = NULL;
 	//cout << determinant[0] << endl;

@@ -1,866 +1,78 @@
-#include"Variable.h"
-
-Bool SetMatrixSize(Matrix *matrix, const unsigned row, const unsigned column, const unsigned height)
-
-{
-
-	unsigned size = row * column * height * sizeof(MatrixType);
-
-	if (size <= 0)
-
-	{
-
-		return False;
-
-	}
-
-
-
-	matrix->array = (MatrixType*)malloc(size);
-
-
-
-	//如果分配内存成功
-
-	if (matrix->array)
-
-	{
-
-		matrix->row = row;
-
-		matrix->column = column;
-
-		matrix->height = height;
-
-		return True;
-
-	}
-
-	else
-
-	{
-
-		matrix->row = matrix->column = matrix->height = 0;
-
-		return False;
-
-	}
-
-}
-
-
-
-//设置Matrix矩阵中的所有元素大小为ele
-
-void SetMatrixElement(Matrix *matrix, MatrixType element)
-
-{
-
-	unsigned size = matrix->row * matrix->column * matrix->height;
-
-	unsigned i;
-
-
-
-	for (i = 0; i < size; ++i)
-
-	{
-
-		matrix->array[i] = element;
-
-	}
-
-}
-
-
-
-//设置Matrix矩阵中的所有元素大小为0
-
-void SetMatrixZero(Matrix*matrix)
-
-{
-
-	SetMatrixElement(matrix, 0);
-
-}
-
-
-
-//判断矩阵是否为空，若为空则返回1，否则返回0
-
-Bool IsNullMatrix(const Matrix* matrix)
-
-{
-
-	unsigned size = matrix->row * matrix->column * matrix->column;
-
-
-
-	if (size <= 0 || matrix->array == NULL)
-
-	{
-
-		return True;
-
-	}
-
-	return False;
-
-}
-
-
-
-//销毁矩阵，即释放为矩阵动态分配的内存,并将矩阵的长宽高置0
-
-void DestroyMatrix(Matrix *matrix)
-
-{
-
-	if (!IsNullMatrix(matrix))
-
-	{
-
-		free(matrix->array);
-
-		matrix->array = NULL;
-
-	}
-
-
-
-	matrix->row = matrix->column = matrix->height = 0;
-	matrix = NULL;
-}
-
-
-
-//计算矩阵可容纳元素个数，即return row*column*height
-
-unsigned MatrixCapacity(const Matrix*matrix)
-
-{
-
-	return matrix->row * matrix->column * matrix->height;
-
-}
-
-
-
-
-
-//||matrix||_2  求A矩阵的2范数
-
-MatrixType MatrixNorm2(const Matrix *matrix)
-
-{
-
-	unsigned size = matrix->row * matrix->column *matrix->height;
-
-	unsigned i;
-
-	MatrixType norm = 0;
-
-
-
-	for (i = 0; i < size; ++i)
-
-	{
-
-		norm += (matrix->array[i]) *(matrix->array[i]);
-
-	}
-
-
-
-	return (MatrixType)sqrt(norm);
-
-}
-
-
-
-//matrixB = matrix(:,:,height)即拷贝三维矩阵的某层，若matrix为二维矩阵，需将height设置为0
-
-Bool CopyMatrix(Matrix* matrixB, Matrix *matrix, unsigned height)
-
-{
-
-	unsigned size, i;
-
-	Matrix matrixA;
-
-
-
-	//判断height值是否正确
-
-	if (height < 0 || height >= matrix->height)
-
-	{
-
-		printf("ERROR: CopyMatrix() parameter error！\n");
-
-		return False;
-
-	}
-
-
-
-	//将matrix(:,:,height) 转换为二维矩阵matrixA
-
-	matrixA.row = matrix->row;
-
-	matrixA.column = matrix->column;
-
-	matrixA.height = 1;
-
-	matrixA.array = matrix->array + height * matrix->row * matrix->column;
-
-
-
-	//判断两矩阵指向的内存是否相等
-
-	if (matrixA.array == matrixB->array)
-
-	{
-
-		return True;
-
-	}
-
-
-
-	//计算matrixA的容量
-
-	size = MatrixCapacity(&matrixA);
-
-	//判断matrixB的容量与matrixA的容量是否相等
-
-	if (MatrixCapacity(matrixB) != size)
-
-	{
-
-		DestroyMatrix(matrixB);
-
-		SetMatrixSize(matrixB, matrixA.row, matrixA.column, matrixA.height);
-
-	}
-
-	else
-
-	{
-
-		matrixB->row = matrixA.row;
-
-		matrixB->column = matrixA.column;
-
-		matrixB->height = matrixA.height;
-
-	}
-
-
-
-	for (i = 0; i < size; ++i)
-
-	{
-
-		matrixB->array[i] = matrixA.array[i];
-
-	}
-
-
-
-	return True;
-
-}
-
-
-
-//matrixC = matrixA * matrixB
-
-Bool MatrixMultiMatrix(Matrix *matrixC, const Matrix* matrixA, const Matrix* matrixB)
-
-{
-
-	size_t row_i, column_i, i;
-
-	size_t indexA, indexB, indexC;
-
-	MatrixType temp;
-
-	Matrix tempC;
-
-
-
-	if (IsNullMatrix(matrixA) || IsNullMatrix(matrixB))
-
-	{
-
-		return False;
-
-	}
-
-
-
-	if (matrixA->column != matrixB->row)
-
-	{
-
-		return False;
-
-	}
-
-
-
-	if (MatrixCapacity(matrixC) != matrixA->row * matrixB->column)
-
-	{
-
-		SetMatrixSize(&tempC, matrixA->row, matrixB->column, 1);
-
-	}
-
-	else
-
-	{
-
-		tempC.array = matrixC->array;
-
-		tempC.row = matrixA->row;
-
-		tempC.column = matrixB->column;
-
-		tempC.height = 1;
-
-	}
-
-
-
-	for (row_i = 0; row_i < tempC.row; ++row_i)
-
-	{
-
-		for (column_i = 0; column_i < tempC.column; ++column_i)
-
-		{
-
-			temp = 0;
-
-			for (i = 0; i < matrixA->column; ++i)
-
-			{
-
-				indexA = row_i * matrixA->column + i;
-
-				indexB = i * matrixB->column + column_i;
-
-
-
-				temp += matrixA->array[indexA] * matrixB->array[indexB];
-
-			}
-
-			indexC = row_i * tempC.column + column_i;
-
-
-
-			tempC.array[indexC] = temp;
-
-		}
-
-	}
-
-
-
-
-
-	if (tempC.array != matrixC->array)
-
-	{
-
-		DestroyMatrix(matrixC);
-
-
-
-		matrixC->array = tempC.array;
-
-	}
-
-
-
-	matrixC->row = tempC.row;
-
-	matrixC->column = tempC.column;
-
-	matrixC->height = tempC.height;
-
-
-
-
-
-
-
-	return True;
-
-}
-
-
-
-//对vector中所有元素排序，sign= 0 时为升序，其余为降序
-
-void SortVector(Matrix *vector, int sign)
-
-{
-
-	MatrixType mid;
-
-	int midIndex;
-
-	int size = MatrixCapacity(vector);
-
-	int i, j;
-
-
-
-	if (0 == sign)
-
-	{
-
-		for (i = 0; i < size; ++i)
-
-		{
-
-			mid = vector->array[i];
-
-			midIndex = i;
-
-			for (j = i + 1; j < size; ++j)
-
-			{
-
-				if (mid > vector->array[j])
-
-				{
-
-					mid = vector->array[j];
-
-					midIndex = j;
-
-				}
-
-			}
-
-
-
-			vector->array[midIndex] = vector->array[i];
-
-			vector->array[i] = mid;
-
-		}
-
-	}
-
-	else
-
-	{
-
-		for (i = 0; i < size; ++i)
-
-		{
-
-			mid = vector->array[i];
-
-			midIndex = i;
-
-			for (j = i + 1; j < size; ++j)
-
-			{
-
-				if (mid < vector->array[j])
-
-				{
-
-					mid = vector->array[j];
-
-					midIndex = j;
-
-				}
-
-			}
-
-
-
-			vector->array[midIndex] = vector->array[i];
-
-			vector->array[i] = mid;
-
-		}
-
-	}
-
-}
-
-
-
-//打印矩阵
-
-void PrintMatrix(const Matrix *matrix)
-
-{
-
-	size_t row_i, column_i, height_i, index;
-
-
-
-	for (height_i = 0; height_i < matrix->height; ++height_i)
-
-	{
-
-		(matrix->height == 1) ? printf("[:,:] = \n") : printf("[%d,:,:] = \n", height_i);
-
-
-
-		for (row_i = 0; row_i < matrix->row; ++row_i)
-
-		{
-
-			for (column_i = 0; column_i < matrix->column; ++column_i)
-
-			{
-
-				index = height_i * matrix->row * matrix->column + row_i * matrix->column + column_i;
-
-				printf("%12.4g", matrix->array[index]);
-
-			}
-
-			printf("\n");
-
-		}
-
-	}
-
-}
-
-
-
-//----------------------QR分解-------------------------------------------
-
-
-
-//将A分解为Q和R
-
-void QR(Matrix *A, Matrix *Q, Matrix *R)
-
-{
-
-	unsigned  i, j, k, m;
-
-	unsigned size;
-
-	const unsigned N = A->row;
-
-	MatrixType temp;
-
-
-
-	Matrix a, b;
-
-
-
-	//如果A不是一个二维方阵，则提示错误，函数计算结束
-
-	if (A->row != A->column || 1 != A->height)
-
-	{
-
-		printf("ERROE: QR() parameter A is not a square matrix!\n");
-
-		return;
-
-	}
-
-
-
-	size = MatrixCapacity(A);
-
-	if (MatrixCapacity(Q) != size)
-
-	{
-
-		DestroyMatrix(Q);
-
-		SetMatrixSize(Q, A->row, A->column, A->height);
-
-		SetMatrixZero(Q);
-
-	}
-
-	else
-
-	{
-
-		Q->row = A->row;
-
-		Q->column = A->column;
-
-		Q->height = A->height;
-
-	}
-
-
-
-	if (MatrixCapacity(R) != size)
-
-	{
-
-		DestroyMatrix(R);
-
-		SetMatrixSize(R, A->row, A->column, A->height);
-
-		SetMatrixZero(R);
-
-	}
-
-	else
-
-	{
-
-		R->row = A->row;
-
-		R->column = A->column;
-
-		R->height = A->height;
-
-	}
-
-
-
-	SetMatrixSize(&a, N, 1, 1);
-
-	SetMatrixSize(&b, N, 1, 1);
-
-
-
-	for (j = 0; j < N; ++j)
-
-	{
-
-		for (i = 0; i < N; ++i)
-
-		{
-
-			a.array[i] = b.array[i] = A->array[i * A->column + j];
-
-		}
-
-
-
-		for (k = 0; k < j; ++k)
-
-		{
-
-			R->array[k * R->column + j] = 0;
-
-
-
-			for (m = 0; m < N; ++m)
-
-			{
-
-				R->array[k * R->column + j] += a.array[m] * Q->array[m * Q->column + k];
-
-			}
-
-
-
-			for (m = 0; m < N; ++m)
-
-			{
-
-				b.array[m] -= R->array[k * R->column + j] * Q->array[m * Q->column + k];
-
-			}
-
-		}
-
-
-
-		temp = MatrixNorm2(&b);
-
-		R->array[j * R->column + j] = temp;
-
-
-
-		for (i = 0; i < N; ++i)
-
-		{
-
-			Q->array[i * Q->column + j] = b.array[i] / temp;
-
-		}
-
-	}
-
-
-
-	DestroyMatrix(&a);
-
-	DestroyMatrix(&b);
-
-}
-
-
-
-//----------------------使用特征值计算矩阵特征向量-----------------
-
-//eigenVector为计算结果即矩阵A的特征向量
-
-//eigenValue为矩阵A的所有特征值，
-
-//A为要计算特征向量的矩阵
-
-void Eigenvectors(Matrix *eigenVector, Matrix *A, Matrix *eigenValue)
-
-{
-
-	unsigned i, j, q;
-
-	unsigned count;
-
-	int m;
-
-	const unsigned NUM = A->column;
-
-	MatrixType eValue;
-
-	MatrixType sum, midSum, mid;
-
-	Matrix temp;
-
-
-
-	SetMatrixSize(&temp, A->row, A->column, A->height);
-
-
-
-	for (count = 0; count < NUM; ++count)
-
-	{
-
-		//计算特征值为eValue，求解特征向量时的系数矩阵
-
-		eValue = eigenValue->array[count];
-
-		CopyMatrix(&temp, A, 0);
-
-		for (i = 0; i < temp.column; ++i)
-
-		{
-
-			temp.array[i * temp.column + i] -= eValue;
-
-		}
-
-
-
-		//将temp化为阶梯型矩阵
-
-		for (i = 0; i < temp.row - 1; ++i)
-
-		{
-
-			mid = temp.array[i * temp.column + i];
-
-			for (j = i; j < temp.column; ++j)
-
-			{
-
-				temp.array[i * temp.column + j] /= mid;
-
-			}
-
-
-
-			for (j = i + 1; j < temp.row; ++j)
-
-			{
-
-				mid = temp.array[j * temp.column + i];
-
-				for (q = i; q < temp.column; ++q)
-
-				{
-
-					temp.array[j * temp.column + q] -= mid * temp.array[i * temp.column + q];
-
-				}
-
-			}
-
-		}
-
-		midSum = eigenVector->array[(eigenVector->row - 1) * eigenVector->column + count] = 1;
-
-		for (m = temp.row - 2; m >= 0; --m)
-
-		{
-
-			sum = 0;
-
-			for (j = m + 1; j < temp.column; ++j)
-
-			{
-
-				sum += temp.array[m * temp.column + j] * eigenVector->array[j * eigenVector->column + count];
-
-			}
-
-			sum = -sum / temp.array[m * temp.column + m];
-
-			midSum += sum * sum;
-
-			eigenVector->array[m * eigenVector->column + count] = sum;
-
-		}
-
-
-
-		midSum = sqrt(midSum);
-
-		for (i = 0; i < eigenVector->row; ++i)
-
-		{
-
-			eigenVector->array[i * eigenVector->column + count] /= midSum;
-
-		}
-
-	}
-
-	DestroyMatrix(&temp);
-
-}
+#include"Function.h"
 
 int BuildMatrix(Matrix* matrix, unsigned row, unsigned column, unsigned height)
 {
-	matrix->column = row;
+	matrix->column = column;
 	matrix->height = height;
-	matrix->row = column;
+	matrix->row = row;
 	matrix->array = (MatrixType*)malloc(row * column * height * sizeof(MatrixType));
+
+	unsigned size = height * row * column;
+	
+	for (unsigned i = 0; i < size; i++)
+	{
+		matrix->array[i] = 0.0;
+	}
+
+	return 0;
+}
+
+Bool IsNullMatrix(const Matrix* matrix)
+{
+	unsigned size = matrix->row * matrix->column * matrix->column;
+
+	if (size <= 0 || matrix->array == NULL)
+	{
+		return True;
+	}
+	else
+	{
+		return False;
+	}
+}
+
+int DestroyMatrix(Matrix *matrix)
+{
+	if (!IsNullMatrix(matrix))
+	{
+		free(matrix->array);
+		matrix->array = NULL;
+	}
+
+	matrix->row = matrix->column = matrix->height = 0;
+	matrix = NULL;
 
 	return 0;
 }
 
 int MatrixTranspose(const Matrix* matrix, Matrix* C)
 {
-	BuildMatrix(C, matrix->row, matrix->column, matrix->height);
+	int trigger = 0;
 
-	for (unsigned  i=0 ; i < matrix->height; i++)
+	if (IsNullMatrix(C))
 	{
-		for (unsigned j = 0; j < matrix->row; j++)
+		BuildMatrix(C, matrix->column, matrix->row, matrix->height);
+	}
+	else
+	{
+		if ((matrix->height != C->height) || (matrix->row != C->column) || (matrix->column != C->row))
 		{
-			for (unsigned k = 0; k < C->row; k++)
+			cout << "The size of input matrixs could not match each other" << endl;
+			trigger = 1;
+		}
+	}
+
+	if (!trigger)
+	{
+		for (unsigned i = 0; i < matrix->height; i++)
+		{
+			for (unsigned j = 0; j < matrix->row; j++)
 			{
-					C->array[i * C->row * C->column + k *(C->column) + j] = matrix->array[i* matrix->row * matrix->column + j*(matrix->column)+k];
+				for (unsigned k = 0; k < C->row; k++)
+				{
+					//这里的赋值模式要格外小心，不能是常规的数组下标变换就行
+					C->array[i * C->row * C->column + k * (C->column) + j] = matrix->array[i* matrix->row * matrix->column + j * (matrix->column) + k];
+				}
 			}
 		}
 	}
@@ -872,7 +84,7 @@ int MatrixAdd(const Matrix* A, const Matrix*B, Matrix* C)
 {
 	if (IsNullMatrix(A)||(IsNullMatrix(B)))
 	{
-		cout << "The input added Matrix is invalid. " << endl;
+		cout << "The input matrixs couldn't be null. " << endl;
 	}
 	else
 	{
@@ -882,14 +94,30 @@ int MatrixAdd(const Matrix* A, const Matrix*B, Matrix* C)
 		}
 		else
 		{
-			unsigned size = A->row * A->column * A->height;			
-			BuildMatrix(C, A->row, A->column, A->height);
+			int trigger = 0;
 
-			for (unsigned i = 0; i < size; i++)
+			if (IsNullMatrix(C))
 			{
-				C->array[i] = A->array[i] + B->array[i];
+				BuildMatrix(C, A->row, A->column, A->height);
+			}
+			else  
+			{
+				if ((A->row != C->row) || (A->height != C->height) || (A->column != C->column))
+				{
+					cout << "The size of input matrixs could not match each other" << endl;
+					trigger = 1;
+				}
 			}
 
+			if (!trigger)
+			{
+				unsigned size = A->row * A->column * A->height;
+
+				for (unsigned i = 0; i < size; i++)
+				{
+					C->array[i] = A->array[i] + B->array[i];
+				}
+			}
 		}
 	}
 
@@ -910,14 +138,30 @@ int MatrixSubstract(const Matrix* A, const Matrix*B, Matrix* C)
 		}
 		else
 		{
-			unsigned size = A->row * A->column * A->height;
-			BuildMatrix(C, A->row, A->column, A->height);
+			int trigger = 0;
 
-			for (unsigned i = 0; i < size; i++)
+			if (IsNullMatrix(C))
 			{
-				C->array[i] = A->array[i] - B->array[i];
+				BuildMatrix(C, A->row, A->column, A->height);
+			}
+			else
+			{
+				if ((A->row != C->row) || (A->height != C->height) || (A->column != C->column))
+				{
+					cout << "The size of input matrixs could not match each other" << endl;
+					trigger = 1;
+				}
 			}
 
+			if (!trigger)
+			{
+				unsigned size = A->row * A->column * A->height;
+
+				for (unsigned i = 0; i < size; i++)
+				{
+					C->array[i] = A->array[i] - B->array[i];
+				}
+			}
 		}
 	}
 
@@ -938,34 +182,72 @@ int MatrixMultibyMatrix(const Matrix* A,const Matrix* B, Matrix* C)
 		}
 		else
 		{
-			BuildMatrix(C, A->row, B->column, A->height);
-			Matrix* B_template = new Matrix;
-			Matrix* C_template = new Matrix;
-			MatrixTranspose(B, B_template);
-			MatrixTranspose(C, C_template);
+			int trigger = 0;
 
-			for (unsigned h = 0; h < A->height; h++)
+			if (IsNullMatrix(C))
 			{
-				for (unsigned i = 0; i < B_template->row; i++)
-				{		
-					for (unsigned j = 0; j < A->row; j++)
-					{
-						MatrixType row_template = 0.0;
-
-						for (unsigned k = 0; k < B_template->column; k++)
-						{
-							row_template += B_template->array[h*B_template->row*B_template->column + i*B_template->column + k] * A->array[h*j*A->row*j*A->column + j*A->column + k];
-						}
-
-						C_template->array[h*C_template->column*C_template->row + i*C_template->column+j] = row_template;
-	
-					}
+				BuildMatrix(C, A->row, A->column, A->height);
+			}
+			else
+			{
+				if ((A->row != C->row) || (A->height != C->height) || (B->column != C->column))
+				{
+					cout << "The size of input matrixs could not match each other" << endl;
+					trigger = 1;
 				}
 			}
 
-			MatrixTranspose(C_template, C);
-			DestroyMatrix(C_template);
-			DestroyMatrix(B_template);
+			if (!trigger)
+			{
+				//这是之前偷懒的转置写法
+				//Matrix* B_template = new Matrix;
+				//Matrix* C_template = new Matrix;
+				//MatrixTranspose(B, B_template);
+				//MatrixTranspose(C, C_template);
+
+				//for (unsigned h = 0; h < A->height; h++)
+				//{
+				//	for (unsigned i = 0; i < B_template->row; i++)
+				//	{
+				//		for (unsigned j = 0; j < A->row; j++)
+				//		{
+				//			MatrixType row_template = 0.0;
+
+				//			for (unsigned k = 0; k < B_template->column; k++)
+				//			{
+				//				row_template += B_template->array[h*B_template->row*B_template->column + i * B_template->column + k] * A->array[h * A->row * A->column + j * A->column + k];
+				//			}
+
+				//			C_template->array[h*C_template->column*C_template->row + i * C_template->column + j] = row_template;
+
+				//		}
+				//	}
+				//}
+
+				//MatrixTranspose(C_template, C);
+				//DestroyMatrix(C_template);
+				//DestroyMatrix(B_template);
+
+
+				for (unsigned h = 0; h < A->height; h++)
+				{
+					for (unsigned i = 0; i < B->column; i++)
+					{
+						for (unsigned j = 0; j < A->row; j++)
+						{
+							MatrixType row_template = 0.0;
+
+							for (unsigned k = 0; k < A->column; k++)
+							{
+								row_template += B->array[h * B->row * B->column + i + k * B->column] * A->array[h * A->row * A->column + j * A->column + k];
+							}
+
+							C->array[h * C->column * C->row + i + C->column * j] = row_template;
+
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -980,19 +262,36 @@ int MatrixCopy(const Matrix* matrix,Matrix* C)
 	}
 	else
 	{
-		unsigned size = matrix->row * matrix->column * matrix->height;
-		BuildMatrix(C, matrix->row, matrix->column, matrix->height);
+		int trigger = 0;
 
-		for (unsigned i = 0; i < size; i++)
+		if (IsNullMatrix(C))
 		{
-			C->array[i] = matrix->array[i];
+			BuildMatrix(C, matrix->row, matrix->column, matrix->height);
+		}
+		else
+		{
+			if ((matrix->row != C->row) || (matrix->height != C->height) || (matrix->column != C->column))
+			{
+				cout << "The size of input matrixs could not match each other" << endl;
+				trigger = 1;
+			}
+		}
+
+		if (!trigger)
+		{
+			unsigned size = matrix->row * matrix->column * matrix->height;
+
+			for (unsigned i = 0; i < size; i++)
+			{
+				C->array[i] = matrix->array[i];
+			}
 		}
 	}
 
 	return 0;
 }
 
-int MatrixMultibyConst(const Matrix* matrix, Matrix* C, MatrixType con)
+int MatrixMultibyConst(const Matrix* matrix, Matrix* C, const MatrixType con)
 {
 	if (IsNullMatrix(matrix))
 	{
@@ -1000,19 +299,99 @@ int MatrixMultibyConst(const Matrix* matrix, Matrix* C, MatrixType con)
 	}
 	else
 	{
-		unsigned size = matrix->row * matrix->column * matrix->height;
-		BuildMatrix(C, matrix->row, matrix->column, matrix->height);
+		int trigger = 0;
 
-		for (unsigned i = 0; i < size; i++)
+		if (IsNullMatrix(C))
 		{
-			C->array[i] = matrix->array[i]*con;
+			BuildMatrix(C, matrix->row, matrix->column, matrix->height);
+		}
+		else
+		{
+			if ((matrix->row != C->row) || (matrix->height != C->height) || (matrix->column != C->column))
+			{
+				cout << "The size of input matrixs could not match each other" << endl;
+				trigger = 1;
+			}
+		}
+
+		if (!trigger)
+		{
+			unsigned size = matrix->row * matrix->column * matrix->height;
+
+			for (unsigned i = 0; i < size; i++)
+			{
+				C->array[i] = matrix->array[i] * con;
+			}
 		}
 	}
 
 	return 0;
 }
 
-MatrixType*** MatrixToVector(const Matrix* matrix, ElementType e)
+int MatrixAddbyConst(const Matrix* matrix, Matrix* C, const MatrixType con)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The input matrix is invalid" << endl;
+	}
+	else
+	{
+		int trigger = 0;
+
+		if (IsNullMatrix(C))
+		{
+			BuildMatrix(C, matrix->row, matrix->column, matrix->height);
+		}
+		else
+		{
+			if ((matrix->row != C->row) || (matrix->height != C->height) || (matrix->column != C->column))
+			{
+				cout << "The size of input matrixs could not match each other" << endl;
+				trigger = 1;
+			}
+		}
+
+		if (!trigger)
+		{
+			unsigned size = matrix->row * matrix->column * matrix->height;
+
+			for (unsigned i = 0; i < size; i++)
+			{
+				C->array[i] = matrix->array[i] + con;
+			}
+		}
+	}
+
+	return 0;
+}
+
+int PrintMatrix(const Matrix* matrix)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The matrix is empty." << endl;
+	}
+	else
+	{
+		for (unsigned i = 0; i < matrix->height; i++)
+		{
+			cout << "The " << i << " sth layer is: " << endl;
+			for (unsigned j = 0; j < matrix->row; j++)
+			{
+				for (unsigned k = 0; k < matrix->column; k++)
+				{
+					cout << matrix->array[i*matrix->row*matrix->column + j * matrix->column + k] << "\t";
+				}
+				cout << endl;
+			}
+			cout << "**************************" << endl;
+		}
+	}
+
+	return 0;
+}
+
+MatrixType*** MatrixTo3DimensionPointer(const Matrix* matrix, ElementType e)
 {
 	if (IsNullMatrix(matrix))
 	{
@@ -1031,19 +410,21 @@ MatrixType*** MatrixToVector(const Matrix* matrix, ElementType e)
 			{
 				temp[i][j] = (MatrixType*)malloc(sizeof(MatrixType)*matrix->column);
 
-				if (0 == (int)e)
+				switch (e)
 				{
+				case Zero:
 					for (unsigned k = 0; k < matrix->column; k++)
 					{
-						temp[i][j][k] = 0;
+						temp[i][j][k] = 0.0;
 					}
-				}
-				else if (1 == (int)e)
-				{
+					break;
+
+				case Element:
 					for (unsigned k = 0; k < matrix->column; k++)
 					{
-						temp[i][j][k] = matrix->array[i*matrix->row*matrix->column + j* matrix->column+k];
+						temp[i][j][k] = matrix->array[i * matrix->row * matrix->column + j * matrix->column + k];
 					}
+					break;
 				}
 			}
 		}
@@ -1051,6 +432,45 @@ MatrixType*** MatrixToVector(const Matrix* matrix, ElementType e)
 	}
 }
 
+MatrixType*** Build3DimensionPointer(unsigned row, unsigned column, unsigned height)
+{
+	MatrixType*** temp = (MatrixType***)malloc(sizeof(MatrixType**)*height);
+
+	for (unsigned i = 0; i < height; i++)
+	{
+		temp[i] = (MatrixType**)malloc(sizeof(MatrixType*)*row);
+
+		for (unsigned j = 0; j < row; j++)
+		{
+			temp[i][j] = (MatrixType*)malloc(sizeof(MatrixType)*column);
+
+			for (unsigned k = 0; k < column; k++)
+			{
+				temp[i][j][k] = 0.0;
+			}
+		}
+	}
+
+	return temp;
+}
+
+int Destroy3DimensionPointer(MatrixType*** temp,unsigned row, unsigned height)
+{
+	for(unsigned i=0;i<height;i++)
+	{
+		for(unsigned j=0;j<row;j++)
+		{
+			free(temp[i][j]);
+			temp[i][j] = NULL;
+		}
+		free(temp[i]);
+		temp[i] = NULL;
+	}
+	free(temp);
+	temp = NULL;
+
+	return 0;
+}
 
 MatrixType** Build2DimensionPointer(unsigned row, unsigned column)
 {
@@ -1069,7 +489,7 @@ MatrixType** Build2DimensionPointer(unsigned row, unsigned column)
 	return temp;
 }
 
-int Destory2DimensionPointer(MatrixType** temp, unsigned row)
+int Destroy2DimensionPointer(MatrixType** temp, unsigned row)
 {
 	for (unsigned i = 0; i < row; i++)
 	{
@@ -1082,35 +502,419 @@ int Destory2DimensionPointer(MatrixType** temp, unsigned row)
 	return 0;
 }
 
-MatrixType*** Build3DimensionPointer(unsigned row, unsigned column,unsigned height)
+MatrixType* Build1DimensionPointer(unsigned row)
 {
-	MatrixType*** temp = (MatrixType***)malloc(sizeof(MatrixType**)*height);
+	MatrixType* temp = (MatrixType*)malloc(sizeof(MatrixType)*row);
 
-	for (unsigned i = 0; i < height; i++)
+	for (unsigned i = 0; i < row; i++)
 	{
-		temp[i] = (MatrixType**)malloc(sizeof(MatrixType*)*row);
-
-		for (unsigned j = 0; j < row; j++)
-		{
-			temp[i][j] = (MatrixType*)malloc(sizeof(MatrixType)*column);
-
-			for (unsigned k = 0; k < column; k++)
-			{
-				temp[i][j][k] = 0.0;
-			}
-
-		}
+		temp[i] = 0.0;
 	}
 
 	return temp;
 }
 
+int Destroy1DimensionPointer(MatrixType* temp)
+{
+	free(temp);
+	temp = NULL;
 
+	return 0;
+}
 
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerMultiby3DimensionPointer(const MatrixType*** A, unsigned height, unsigned rowA, unsigned columnA, unsigned columnB, const MatrixType*** B, MatrixType*** C)
+{ 
+	for (unsigned i = 0; i < height; i++)
+	{
+		for (unsigned p = 0; p < columnB; p++)
+		{
+			for (unsigned j = 0; j < rowA; j++)
+			{
+				for (unsigned k = 0; k < columnA; k++)
+				{
+					C[i][j][p] += A[i][j][k] * B[i][k][p];
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerTranspose(const MatrixType*** A, unsigned height, unsigned rowA, unsigned columnA, MatrixType*** C)
+{
+	for (unsigned i = 0; i < height; i++)
+	{
+		for (unsigned j = 0; j < rowA; j++)
+		{
+			for (unsigned k = 0; k < columnA; k++)
+			{
+				C[i][k][j] = A[i][j][k];
+			}
+		}
+	}
+
+	return 0;
+
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int __3DimensionPointerCopytoMatrix(MatrixType*** temp, unsigned row,unsigned column, unsigned height, Matrix* matrix)
+{
+	if (IsNullMatrix(matrix))
+	{
+		BuildMatrix(matrix, row, column, height);
+	}
+	for (unsigned i = 0; i < height; i++)
+	{
+		for (unsigned j = 0; j < matrix->row; j++)
+		{
+			for (unsigned k = 0; k < matrix->column; k++)
+			{
+				matrix->array[i * matrix->column * matrix->row + j * matrix->column + k] = temp[i][j][k];
+			}
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerAdd(const MatrixType*** A, unsigned height, unsigned rowA, unsigned columnA,const MatrixType*** B, MatrixType*** C)
+{
+	for (unsigned i = 0; i < height; i++)
+	{
+		for (unsigned j = 0; j < rowA; j++)
+		{
+			for (unsigned k = 0; k < columnA; k++)
+			{
+				C[i][j][k] = A[i][j][k]+B[i][j][k];
+			}
+		}
+	}
+
+	return 0;
+
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerSubstract(const MatrixType*** A, unsigned height, unsigned rowA, unsigned columnA, const MatrixType*** B, MatrixType*** C)
+{
+	for (unsigned i = 0; i < height; i++)
+	{
+		for (unsigned j = 0; j < rowA; j++)
+		{
+			for (unsigned k = 0; k < columnA; k++)
+			{
+				C[i][j][k] = A[i][j][k] - B[i][j][k];
+			}
+		}
+	}
+
+	return 0;
+
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerAddby2DimensionPointer(const MatrixType*** A, unsigned layer, unsigned rowA, unsigned columnA, const MatrixType** B, MatrixType** C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[i][j] = A[layer][i][j] + B[i][j];			
+		}
+	}
+
+	return 0;
+
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerSubstractby2DimensionPointer(const MatrixType*** A, unsigned layer, unsigned rowA, unsigned columnA, const MatrixType** B, MatrixType** C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[i][j] = A[layer][i][j] - B[i][j];
+		}
+	}
+
+	return 0;
+
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerAddbyConst(const MatrixType*** A, unsigned layer, unsigned rowA, unsigned columnA, const MatrixType con, MatrixType** C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[i][j] = A[layer][i][j] + con;
+		}
+	}
+
+	return 0;
+
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerMultibyConst(const MatrixType*** A, unsigned layer, unsigned rowA, unsigned columnA, const MatrixType con, MatrixType** C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[i][j] = A[layer][i][j] * con;
+		}
+	}
+
+	return 0;
+
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _2DimensionPointerMultiby2DimensionPointer(MatrixType** A, unsigned rowA, unsigned columnA, unsigned columnB, MatrixType** B, MatrixType** C)
+{
+	for (unsigned i = 0; i < columnB; i++)
+	{
+		for (unsigned j = 0; j < rowA; j++)
+		{
+			for (unsigned k = 0; k < columnA; k++)
+			{
+				C[j][i] += A[j][k] * B[k][i];
+			}
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _2DimensionPointerCopyto2DimensionPointer(MatrixType** A, unsigned rowA, unsigned columnA, MatrixType** B)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			B[i][j] = A[i][j];
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerMultiby2DimensionPointer(const MatrixType*** A,unsigned layer, unsigned rowA, unsigned columnA, unsigned columnB, const MatrixType** B, MatrixType** C)
+{
+	for (unsigned i = 0; i < columnB; i++)
+	{
+		for (unsigned j = 0; j < rowA; j++)
+		{
+			for (unsigned k = 0; k < columnA; k++)
+			{
+				C[j][i] += A[layer][j][k] * B[k][i];
+			}
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _3DimensionPointerMultiby1DimensionPointer(const MatrixType*** A, unsigned layer, unsigned rowA, unsigned columnA, const MatrixType* B, MatrixType* C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[i] += A[layer][i][j] * B[j];
+		}
+	}
+	
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _2DimensionPointerMultiby1DimensionPointer(const MatrixType** A, unsigned rowA, unsigned columnA, const MatrixType* B, MatrixType* C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[i] += A[i][j] * B[j];
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _2DimensionPointerTranspose(const MatrixType** A, unsigned rowA, unsigned columnA, MatrixType** C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[j][i] = A[i][j];
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _2DimensionPointerAdd(const MatrixType** A, unsigned rowA, unsigned columnA, const MatrixType** B, MatrixType** C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{			
+			C[i][j] = A[i][j] + B[i][j];			
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _2DimensionPointerSubstract(const MatrixType** A, unsigned rowA, unsigned columnA, const MatrixType** B, MatrixType** C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[i][j] = A[i][j] - B[i][j];
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _2DimensionPointerAddbyConst(const MatrixType** A, unsigned rowA, unsigned columnA, MatrixType con, MatrixType** C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[i][j] = A[i][j] + con;
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _2DimensionPointerMultibyConst(const MatrixType** A, unsigned rowA, unsigned columnA, MatrixType con, MatrixType** C)
+{
+	for (unsigned i = 0; i < rowA; i++)
+	{
+		for (unsigned j = 0; j < columnA; j++)
+		{
+			C[i][j] = A[i][j] * con;
+		}
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _2DimensionPointerCopytoMatrix(Matrix* matrix, unsigned layer, unsigned rowA, unsigned columnA, MatrixType** A)
+{
+	int trigger = 0;
+
+	if (IsNullMatrix)
+	{
+		BuildMatrix(matrix, rowA, columnA, layer);
+	}
+	else
+	{
+		if (matrix->row != rowA || matrix->column != columnA || matrix->height < layer)
+		{
+			cout << "Please recheck the size." << endl;
+		}
+		trigger = 1;
+	}
+	if (!trigger)
+	{
+		for (unsigned i = 0; i < rowA; i++)
+		{
+			for (unsigned j = 0; j < columnA; j++)
+			{
+				matrix->array[layer * rowA * columnA + i * columnA + j] = A[i][j];
+			}
+		}
+	}
+
+	return 0;
+}
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _1DimensionPointerMultiby1DimensionPointer(const MatrixType* A, unsigned columnA, const MatrixType* B, MatrixType& C)
+{
+	for (unsigned i = 0; i < columnA; i++)
+	{
+		C += A[i] * B[i];
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _1DimensionPointerSubstract(const MatrixType* A, unsigned columnA, const MatrixType* B, MatrixType* C)
+{
+	for (unsigned i = 0; i < columnA; i++)
+	{
+		C[i] = A[i] - B[i];	
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _1DimensionPointerAdd(const MatrixType* A, unsigned columnA, const MatrixType* B, MatrixType* C)
+{
+	for (unsigned i = 0; i < columnA; i++)
+	{
+		C[i] = A[i] + B[i];
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _1DimensionPointerMultibyConst(const MatrixType* A, unsigned columnA, MatrixType con, MatrixType* C)
+{
+	for (unsigned i = 0; i < columnA; i++)
+	{
+		C[i]= A[i] * con;
+	}
+
+	return 0;
+}
+
+//因为无法判别指针所指内存的长度，所以在运算前自行确保矩阵的长宽高相互匹配
+int _1DimensionPointerAddbyConst(const MatrixType* A, unsigned columnA, MatrixType con, MatrixType* C)
+{
+	for (unsigned i = 0; i < columnA; i++)
+	{
+		C[i] = A[i] + con;
+	}
+
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////
 int BuildVector(Vector* vector, unsigned n)
 {
 	vector->length = n;
 	vector->array = (VectorType *)malloc(sizeof(VectorType)*n);
+	//memset(vector, 0.0, n * sizeof(VectorType));
+
 	for (unsigned i = 0; i < vector->length; i++)
 	{
 		vector->array[i] = 0.0;
@@ -1124,12 +928,13 @@ Bool IsNullVector(const Vector* vector)
 	unsigned size = vector->length;
 
 	if (size <= 0 || vector->array == NULL)
-
 	{
 		return True;
 	}
-
-	return False;
+	else
+	{
+		return False;
+	}
 }
 
 int VectorCopyToVector(const Vector* A, Vector* B)
@@ -1178,13 +983,26 @@ int DestroyVector(Vector* vector)
 	return 0;
 }
 
+//由于无法获知指针所指向内容大小，所以尺寸得自行判断
+int Destroy2DimensionVector(Vector** vector, unsigned column)
+{
+	for (unsigned i = 0; i < column; i++)
+	{
+		DestroyVector(vector[i]);
+	}
+	free(vector);
+	vector = NULL;
+
+	return 0;
+}
+
 int PrintVector(Vector* vector)
 {
 	if (!IsNullVector(vector))
 	{
 		for (unsigned i = 0; i < vector->length; i++)
 		{
-			cout << vector->array[i] << "\t";
+			cout << vector->array[i] << " "<<endl;
 		}
 		cout << endl;
 	}
@@ -1192,24 +1010,6 @@ int PrintVector(Vector* vector)
 	{
 		cout << "The input Vector can't be Null." << endl;
 	}
-
-	return 0;
-}
-
-int DestoryVectorPoint(MatrixType*** temp, unsigned row, unsigned height)
-{
-	for (unsigned i = 0; i < height; i++)
-	{
-		for (unsigned j = 0; j < row; j++)
-		{
-			free(temp[i][j]);
-			temp[i][j] = NULL;
-		}
-		free(temp[i]);
-		temp[i] = NULL;
-	}
-	free(temp);
-	temp = NULL;
 
 	return 0;
 }
@@ -1280,11 +1080,27 @@ int VectorSubstractVector(const Vector* A, const Vector* B, Vector* C)
 		}
 		else
 		{
-			BuildVector(C, A->length);
+			int trigger = 0;
 
-			for (unsigned i = 0; i < A->length; i++)
+			if (!IsNullVector)
 			{
-				C->array[i] = A->array[i] - B->array[i];
+				BuildVector(C, A->length);
+			}
+			else
+			{
+				if (C->length != A->length)
+				{
+					cout << "The input matrixs could not match each other." << endl;
+					trigger = 1;
+				}
+			}
+
+			if (!trigger)
+			{
+				for (unsigned i = 0; i < A->length; i++)
+				{
+					C->array[i] = A->array[i] - B->array[i];
+				}
 			}
 		}
 	}
@@ -1339,6 +1155,148 @@ VectorType VectorNorm(const Vector* A)
 	}
 }
 
+//向量和矩阵相乘，只能选择三维矩阵的任意第三维的一个二维空间
+int MatrixMultibyVector(const Matrix* matrix, unsigned layer, const Vector* vector, Vector* result)
+{
+	if (IsNullMatrix(matrix)||(IsNullVector(vector)))
+	{
+		cout << "The input matrix or vector is invalid" << endl;
+	}
+	else
+	{
+		if (matrix->column != vector->length)
+		{
+			cout << "The size of input matrix and vector could not match each other" << endl;
+		}
+		else
+		{
+			int trigger = 0;
+
+			if (IsNullVector(result))
+			{
+				BuildVector(result, matrix->row);
+			}
+			else
+			{
+				if (result->length != matrix->row)
+				{
+					cout << "The size of recept vector could not match the row size of input matrix"<< endl;
+					trigger = 1;
+				}			
+			}
+
+			if (!trigger)
+			{
+				for (unsigned j = 0;j < matrix->row;j++)
+				{
+					for (unsigned k = 0; k < matrix->column; k++)
+					{
+						result->array[j] += matrix->array[layer * matrix->row * matrix->column + j * matrix->column + k] * vector->array[k];
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+//向量和矩阵相乘，只能选择三维矩阵的任意第三维的一个二维空间,由于无法获知指针所指向内容大小，所以尺寸得自行判断
+int _3DimensionPointerMultibyVector(const MatrixType*** temp, unsigned row, unsigned column, unsigned layer, const Vector* vector, Vector* result)
+{
+	if (vector->length != column)
+	{
+		cout << "The size of input pointer and vector could not match each other" << endl;
+	}
+	else
+	{
+		int trigger = 0;
+
+		if (IsNullVector(result))
+		{
+			BuildVector(result, row);
+		}
+		else
+		{
+			if (result->length != row)
+			{
+				cout << "The size of recept vector could not match the row size of input matrix" << endl;
+				trigger = 1;
+			}
+		}
+
+		if (!trigger)
+		{
+			for (unsigned j = 0; j < row; j++)
+			{
+				for (unsigned k = 0; k < column; k++)
+				{
+					result->array[j] += temp[layer][j][k] * vector->array[k];
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+//由于无法获知指针所指向内容大小，所以尺寸得自行判断
+int _2DimensionPointerMultibyVector(const MatrixType** temp, unsigned row, unsigned column, const Vector* vector, Vector* result)
+{
+	if (vector->length != column)
+	{
+		cout << "The size of input pointer and vector could not match each other" << endl;
+	}
+	else
+	{
+		int trigger = 0;
+
+		if (IsNullVector(result))
+		{
+			BuildVector(result, row);
+		}
+		else
+		{
+			if (result->length != row)
+			{
+				cout << "The size of recept vector could not match the row size of input matrix" << endl;
+				trigger = 1;
+			}
+		}
+
+		if (!trigger)
+		{
+			for (unsigned j = 0; j < row; j++)
+			{
+				for (unsigned k = 0; k < column; k++)
+				{
+					result->array[j] += temp[j][k] * vector->array[k];
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+//由于无法获知指针所指向内容大小，所以尺寸得自行判断
+int _1DimensionPointerMultibyVector(const MatrixType* temp, unsigned column, const Vector* vector, MatrixType& result)
+{
+	if (vector->length != column)
+	{
+		cout << "The size of input pointer and vector could not match each other" << endl;
+	}
+	else
+	{
+		for (unsigned i = 0; i < column; i++)
+		{
+			result += temp[i] * vector->array[i];
+		}			
+	}
+
+	return 0;
+}
+
 int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons)
 {
 	if (IsNullVector(A))
@@ -1347,19 +1305,85 @@ int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons)
 	}
 	else
 	{
-		BuildVector(C, A->length);
+		int trigger = 0;
 
-		for (unsigned i = 0; i < A->length; i++)
+		if (!IsNullVector)
 		{
-			C->array[i] = A->array[i] * cons;
+			BuildVector(C, A->length);
+		}
+		else
+		{
+			if (C->length != A->length)
+			{
+				cout << "The input matrixs could not match each other." << endl;
+				trigger = 1;
+			}
+		}
+
+		if (!trigger)
+		{
+			for (unsigned i = 0; i < A->length; i++)
+			{
+				C->array[i] = A->array[i] * cons;
+			}
 		}
 	}
 
 	return 0;
 }
 
+//由于无法获知指针所指向内容大小，所以尺寸得自行判断
+Vector** _3DimensionPointerCopyto2DimensionVector(const MatrixType*** temp, unsigned layer, unsigned row, unsigned column)
+{
+	Vector** DividedByVector = (Vector**)malloc(sizeof(Vector*) * column);
 
-int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D)
+	for (unsigned n = 0; n < column; n++)
+	{
+		DividedByVector[n] = new Vector;
+		BuildVector(DividedByVector[n], row);
+	}
+
+	for (unsigned j = 0; j < column; j++)
+	{
+		for (unsigned k = 0; k < row; k++)
+		{
+			DividedByVector[j]->array[k] = temp[layer][k][j];
+		}
+	}
+
+	return DividedByVector;
+}
+
+Vector** MatrixCopyto2DimensionVector(const Matrix* matrix, unsigned layer)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The input matrix is invalid" << endl;
+		return NULL;
+	}
+	else
+	{
+		Vector** DividedByVector = (Vector**)malloc(sizeof(Vector*) * matrix->column);
+		//memset(DividedByVector, 0.0, matrix->column * sizeof(Vector*));
+
+		for (unsigned n = 0; n < matrix->column; n++)
+		{
+			DividedByVector[n] = new Vector;
+			BuildVector(DividedByVector[n], matrix->row);
+		}
+
+		for (unsigned j = 0; j < matrix->column; j++)
+		{
+			for (unsigned k = 0; k < matrix->row; k++)
+			{
+				DividedByVector[j]->array[k] = matrix->array[layer * matrix->row * matrix->column + j + k * matrix->column];
+			}
+		}
+		return DividedByVector;
+	}
+}
+
+int RealMatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D)
 {
 	if (IsNullMatrix(matrix))
 	{
@@ -1367,6 +1391,7 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D)
 	}
 	else
 	{
+		//正交分解要求原矩阵为方阵
 		if (matrix->column != matrix->row)
 		{
 			cout << "The the input matrix is not a square." << endl;
@@ -1377,34 +1402,25 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D)
 			BuildMatrix(I, matrix->row, matrix->column, matrix->height);
 			BuildMatrix(D, matrix->row, matrix->column, matrix->height);
 
-			//这里也可以不用构造double***，直接矩阵转置后for循环赋值也可以，只是这么写比较直观一些
-			MatrixType***temp1 = MatrixToVector(matrix, Element);
-			MatrixType***temp2 = MatrixToVector(matrix, Zero);
-			MatrixType***temp3 = MatrixToVector(matrix, Zero);
+			//temp2用于暂存新正交矩阵，temp3用于暂存上三角归一化后倍数矩阵
+			MatrixType***temp2 = MatrixTo3DimensionPointer(matrix, Zero);
+			MatrixType***temp3 = MatrixTo3DimensionPointer(matrix, Zero);
 
 			for (unsigned i = 0; i < matrix->height; i++)
 			{
-				Vector** DividedByVector = (Vector**)malloc(sizeof(Vector*) * matrix->column);
-						
-				for (unsigned n = 0; n < matrix->column; n++)
-				{
-					DividedByVector[n] = new Vector;
-					BuildVector(DividedByVector[n], matrix->row);
-				}
+				Vector** DividedByVector = MatrixCopyto2DimensionVector(matrix, i);
 
+				//初始化上三角矩阵，对角线都为1
 				for (unsigned j = 0; j < matrix->column; j++)
 				{
 					temp3[i][j][j] = 1;
 
-					for (unsigned k = 0; k < matrix->row; k++)
-					{
-						DividedByVector[j]->array[k] = temp1[i][k][j];
-					}
 				}
 
+				//这里相当于是给Beta1赋值，Beta1==Alpha1，其实就是原矩阵第一列
 				for (unsigned k = 0; k < matrix->row; k++)
 				{
-					temp2[i][k][0] =DividedByVector[0]->array[k];
+					temp2[i][k][0] = DividedByVector[0]->array[k];
 				}
 
 				for (unsigned j = 1; j < matrix->column; j++)
@@ -1413,9 +1429,9 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D)
 					{
 						for (unsigned k = 0; k < matrix->row; k++)
 						{
-							temp2[i][k][j] += VectorDotProduct(DividedByVector[j], DividedByVector[m]) / VectorDotProduct(DividedByVector[m], DividedByVector[m]) * DividedByVector[m]->array[k];	
-							temp3[i][m][j] = VectorDotProduct(DividedByVector[j], DividedByVector[m]) / VectorDotProduct(DividedByVector[m], DividedByVector[m]);
+							temp2[i][k][j] += VectorDotProduct(DividedByVector[j], DividedByVector[m]) / VectorDotProduct(DividedByVector[m], DividedByVector[m]) * DividedByVector[m]->array[k];
 						}
+						temp3[i][m][j] = VectorDotProduct(DividedByVector[j], DividedByVector[m]) / VectorDotProduct(DividedByVector[m], DividedByVector[m]);
 					}
 
 					for (unsigned k = 0; k < matrix->row; k++)
@@ -1424,21 +1440,13 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D)
 						temp2[i][k][j] = DividedByVector[j]->array[k];
 					}
 				}
-				
-				Vector* norm = new Vector;
-				BuildVector(norm, matrix->row);
 
-				unsigned rowindex = 0;
 				MatrixType div = 0.0;
 
+				//为求得的正交矩阵归一化，并把倍数赋值到上三角矩阵
 				for (unsigned j = 0; j < matrix->column; j++)
 				{
-					for (unsigned k = 0; k < matrix->row; k++)
-					{						
-						norm->array[k] = temp2[i][k][j];
-					}
-
-					div = VectorNorm(norm);
+					div = VectorNorm(DividedByVector[j]);
 
 					for (unsigned k = 0; k < matrix->row; k++)
 					{
@@ -1447,43 +1455,24 @@ int MatrixSchmitOrthogonal(const Matrix* matrix, Matrix *I,Matrix* D)
 
 					for (unsigned q = 0; q < matrix->column; q++)
 					{
-						temp3[i][rowindex][q] = temp3[i][rowindex][q] * div;
+						temp3[i][j][q] = temp3[i][j][q] * div;
 					}
 
-					rowindex++;
-
 				}
 
-				DestroyVector(norm);
-
-				for (unsigned k = 0; k < matrix->row; k++)
-				{
-					for (unsigned j = 0; j < matrix->column; j++)
-					{
-						I->array[i*matrix->column*matrix->row + k * matrix->column + j] = temp2[i][k][j];
-						D->array[i*matrix->column*matrix->row + k * matrix->column + j] = temp3[i][k][j];
-					}
-				}
-
-				for (unsigned n = 0; n < matrix->column; n++)
-				{
-					DestroyVector(DividedByVector[n]);
-				}
-				free(DividedByVector);
-				DividedByVector = NULL;
+				Destroy2DimensionVector(DividedByVector, matrix->column);
 			}
-
-			DestoryVectorPoint(temp1,matrix->row,matrix->height);
-			DestoryVectorPoint(temp2, matrix->row, matrix->height);
-			DestoryVectorPoint(temp3, matrix->row, matrix->height);
-
+			__3DimensionPointerCopytoMatrix(temp2, matrix->row, matrix->column, matrix->height, I);
+			__3DimensionPointerCopytoMatrix(temp3, matrix->row, matrix->column, matrix->height, D);
+			Destroy3DimensionPointer(temp2, matrix->row, matrix->height);
+			Destroy3DimensionPointer(temp3, matrix->row, matrix->height);
 		}
 	}
 
 	return 0;
 }
 
-int MatrixDeterminant(const Matrix* matrix, double* determinant)
+int RealMatrixDeterminant(const Matrix* matrix, Vector* determinant)
 {
 	if (IsNullMatrix(matrix))
 	{
@@ -1491,92 +1480,108 @@ int MatrixDeterminant(const Matrix* matrix, double* determinant)
 	}
 	else
 	{
+		//求行列式必须为方阵
 		if (matrix->column != matrix->row)
 		{
 			cout << "The the input matrix is not a square." << endl;
 		}
 		else
 		{	
-			for (unsigned i = 0; i < matrix->height; i++)
-			{		
-				int index = 1;
-				double sum = 1.0;
-				MatrixType***temp1 = MatrixToVector(matrix, Element);
-				Vector* vectemp = new Vector;
-				BuildVector(vectemp, matrix->row);
-				unsigned goon = 1;
+			//用temp1暂存初始矩阵
+			MatrixType***temp1 = MatrixTo3DimensionPointer(matrix, Element);
+			int trigger0 = 0;
 
-				for (unsigned j = 0; j < matrix->row; j++)
+			if(IsNullVector(determinant))
+			{
+				BuildVector(determinant, matrix->height);
+			}
+			else
+			{
+				if (determinant->length != matrix->height)
 				{
-					if (temp1[i][j][j] == 0)
+					cout << "The input size of vector could not match that of the matrix's third dimension." << endl;
+					trigger0 = 1;
+				}
+			}
+		
+			if (!trigger0)
+			{
+				for (unsigned i = 0; i < matrix->height; i++)
+				{
+					int index = 1;
+
+					//行列式的返回值
+					double sum = 1.0;
+
+					//用于暂存中间变量（要调换的列）
+					MatrixType middle = 0.0;
+
+					int trigger = 1;
+
+					//对角线找主元和向下消主元是同时进行的，一经发现对角线非主元立刻向下消元
+					for (unsigned j = 0; j < matrix->row; j++)
 					{
-						for (unsigned m = j + 1; m <= matrix->column; m++)
+						//如果对角线为0，向右找主元
+						if (temp1[i][j][j] == 0)
 						{
-							if (m < matrix->column)
+							for (unsigned m = j + 1; m <= matrix->column; m++)
 							{
-								if (temp1[i][j][m] == 0)
+								if (m < matrix->column)
 								{
-									index *= -1;
+									//行列式互换相邻行和列需要乘以-1
+									if (temp1[i][j][m] == 0)
+									{
+										index *= -1;
+									}
+									else
+									{
+										for (unsigned w = 0; w < matrix->row; w++)
+										{
+											//vectemp->array[w] = temp1[i][w][j];
+											middle = temp1[i][w][j];
+											temp1[i][w][j] = temp1[i][w][m];
+											temp1[i][w][m] = middle;
+										}
+										index *= -1;
+										break;
+									}
 								}
+								//如果主元到了最后一个元素还是为0，行列式就为0
 								else
 								{
-									for (unsigned w = 0; w < matrix->row; w++)
-									{
-										vectemp->array[w] = temp1[i][w][j];
-										temp1[i][w][j] = temp1[i][w][m];
-										temp1[i][w][m] = vectemp->array[w];
-									}
-									index *= -1;
+									sum = 0.0;
+									trigger = 0;
 									break;
 								}
 							}
-							else
-							{
-								sum = 0.0;
-								goon = 0;
-								break;
-							}
 						}
-					}
 
-					if(goon)
-					{
-						double temvar = 0.0;
-						for (unsigned h = j + 1; h < matrix->row; h++)
+						//这里开始进行消元法，从上至下构造上三角矩阵
+						if (trigger)
 						{
-							temvar = temp1[i][h][j] / temp1[i][j][j];
-							for (unsigned k = 0; k < matrix->column; k++)
+							double div = 0.0;
+							for (unsigned h = j + 1; h < matrix->row; h++)
 							{
-								temp1[i][h][k] = temp1[i][h][k] - temvar * temp1[i][j][k];
+								div = temp1[i][h][j] / temp1[i][j][j];
+								for (unsigned k = 0; k < matrix->column; k++)
+								{
+									temp1[i][h][k] = temp1[i][h][k] - div * temp1[i][j][k];
+								}
 							}
+
 						}
-						
 					}
-				}
 
-				for (unsigned l = 0; l < matrix->row; l++)
-				{
-					sum *= temp1[i][l][l];
-				}
-				sum=sum * index;
-				determinant[i] = sum;
-
-				/*For testing the transform result.
-				for (unsigned r = 0; r < matrix->row; r++)
-				{
-					for (unsigned y = 0; y < matrix->column; y++)
+					//行列式为对角线主元的累积，同时还要考虑对换列引起的符号变化
+					for (unsigned l = 0; l < matrix->row; l++)
 					{
-						
-						cout << temp1[i][r][y] << " ";
+						sum *= temp1[i][l][l];
 					}
-					cout << endl;
-				}
-				getchar();*/
-
-				DestroyVector(vectemp);
-				DestoryVectorPoint(temp1, matrix->row, matrix->height);
-				
+					sum = sum * index;
+					determinant->array[i] = sum;
+				}						
 			}
+			Destroy3DimensionPointer(temp1, matrix->row, matrix->height);
 		}
 	}
 
@@ -1595,15 +1600,15 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 		unsigned row = 0;
 		unsigned column = 0;
 
+		//如果为方阵（非稀疏）则不考虑锁定行和列，如果列数大于行数，只计算前面第总行数的列（需要优化），如果行数大于列数则不处理，
+		//因为Househoder变换一定能把需要变为0的行全变为0
 		if (matrix->column >= matrix->row)
 		{
-			cout << "." << endl;
 			row = matrix->row;
 			column = matrix->row;
 		}
 		else if (matrix->column < matrix->row)
 		{
-			cout << "." << endl;
 			column = matrix->column;
 			row = matrix->row;
 		}
@@ -1611,63 +1616,53 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 		BuildMatrix(Q, row, row, matrix->height);
 		BuildMatrix(R, row, row, matrix->height);
 
-		MatrixType***temp1 = MatrixToVector(matrix, Element);
-		MatrixType***temp2 = MatrixToVector(R, Zero);
-		MatrixType***temp3 = MatrixToVector(Q, Zero);
-		//MatrixType***htemp = Build3DimensionPointer(row,row,column);
+		//temp1用于暂存原矩阵，temp2暂存正交矩阵，temp3暂存上三角矩阵
+		MatrixType***temp1 = MatrixTo3DimensionPointer(matrix, Element);
+		MatrixType***temp2 = MatrixTo3DimensionPointer(R, Zero);
+		MatrixType***temp3 = MatrixTo3DimensionPointer(Q, Zero);
 
 		for (unsigned i = 0; i < matrix->height; i++)
 		{
-			Vector** DividedByVector = (Vector**)malloc(sizeof(Vector*) * column);
+			//Vector** DividedByVector = (Vector**)malloc(sizeof(Vector*) * column);
 
-			for (unsigned n = 0; n < column; n++)
-			{
-				DividedByVector[n] = new Vector;
-				BuildVector(DividedByVector[n], row);
-			}
-
-			for (unsigned j = 0; j < column; j++)
-			{
-				for (unsigned k = 0; k < row; k++)
-				{
-					DividedByVector[j]->array[k] = temp1[i][k][j];
-				}
-			}
-
-			//for (unsigned w = 0; w < column; w++)
+			//for (unsigned n = 0; n < column; n++)
 			//{
-			//	for (unsigned ww = 0; ww < row; ww++)
+			//	DividedByVector[n] = new Vector;
+			//	BuildVector(DividedByVector[n], row);
+			//}
+
+			//for (unsigned j = 0; j < column; j++)
+			//{
+			//	for (unsigned k = 0; k < row; k++)
 			//	{
-			//		htemp[w][ww][ww] = 1;
+			//		DividedByVector[j]->array[k] = temp1[i][k][j];
 			//	}
 			//}
+
+			Vector** DividedByVector = MatrixCopyto2DimensionVector(matrix, i);
 
 			unsigned num = row;
 			unsigned t = 0;
 
+			//为了暂存H矩阵累乘的中间结果
 			MatrixType** tempHI = Build2DimensionPointer(row, row);
 			for (unsigned hi = 0; hi < row; hi++)
 			{
 				tempHI[hi][hi] = 1;
 			}
 
+			//MatrixType** tempHM = Build2DimensionPointer(row, row);
+
+			//为矩阵的前（n-1）列创建HouseHolder矩阵
 			for (unsigned j = 0; j < column-1; j++)
 			{
-
+				//构造原始列向量要映射到的单位坐标系
 				Vector* norm = new Vector;
 				BuildVector(norm, num);
 				norm->array[0] = 1;
 
 				Vector* DividedByVectortemp = new Vector;
 				BuildVector(DividedByVectortemp, num);
-
-				//
-				//for (unsigned q = 0; q < row; q++)
-				//{
-				//	cout << DividedByVector[j]->array[q] << " ";
-				//}
-				//cout << endl;
-				//getchar();
 
 				unsigned tt = 0;
 				for (unsigned q = t; q < row; q++)
@@ -1676,53 +1671,31 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 					tt++;
 				}
 
-				//
-				//for (int nu = 0; nu < num; nu++)
-				//{
-				//	cout << norm->array[nu] <<" "<< DividedByVectortemp->array[nu]<<endl;
-				//}
-				//getchar();
+				//Vector* tempnorm = new Vector;
+				//VectorMultibyConst(norm, tempnorm, VectorNorm(DividedByVectortemp));
+				VectorMultibyConst(norm, norm, VectorNorm(DividedByVectortemp));
+
+				//Vector* tempnorm2 = new Vector;
+				//VectorSubstractVector(DividedByVectortemp, tempnorm, tempnorm2);
+				VectorSubstractVector(DividedByVectortemp, norm, norm);
+
+				//Vector* tempnorm3 = new Vector;
+				//VectorMultibyConst(tempnorm2, tempnorm3, 1 / VectorNorm(tempnorm2));
+				VectorMultibyConst(norm, norm, 1 / VectorNorm(norm));
 
 
-				Vector* tempnorm = new Vector;
-				VectorMultibyConst(norm, tempnorm, VectorNorm(DividedByVectortemp));
+				//用来存放单位矩阵
+				//MatrixType** tempI = Build2DimensionPointer(tempnorm3->length, tempnorm3->length);
+				MatrixType** tempI = Build2DimensionPointer(norm->length, norm->length);
 
-				//
-				//for (int nu = 0; nu < num; nu++)
-				//{
-				//	cout << tempnorm->array[nu] << endl;
-				//}
-				//getchar();
+				//用来存放2*w*w（转置）
+				//MatrixType** tempW = Build2DimensionPointer(tempnorm3->length, tempnorm3->length);
+				MatrixType** tempW = Build2DimensionPointer(norm->length, norm->length);
 
-
-				Vector* tempnorm2 = new Vector;
-				VectorSubstractVector(DividedByVectortemp, tempnorm, tempnorm2);
-
-				//
-				//for (int nu = 0; nu < num; nu++)
-				//{
-				//	cout << tempnorm2->array[nu] << endl;
-				//}
-				//getchar();
-
-
-				Vector* tempnorm3 = new Vector;
-				VectorMultibyConst(tempnorm2, tempnorm3, 1 / VectorNorm(tempnorm2));
-
-				//
-				//for (int nu = 0; nu < num; nu++)
-				//{
-				//	cout << tempnorm3->array[nu] << " " << DividedByVectortemp->array[nu] << endl;
-				//}
-				//getchar();
-
-
-				MatrixType** tempI = Build2DimensionPointer(tempnorm3->length, tempnorm3->length);
-
-				MatrixType** tempW = Build2DimensionPointer(tempnorm3->length, tempnorm3->length);
-
+				//用来暂存（n-1）此H矩阵累乘的转置（正交矩阵）
 				MatrixType** tempR = Build2DimensionPointer(row, column);
 
+				//用来暂存原始（n-1）次原始矩阵左侧的H矩阵（Householder变换）
 				MatrixType** tempH= Build2DimensionPointer(row, row);
 
 				for (unsigned q = 0; q < row; q++)
@@ -1730,11 +1703,14 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 					tempH[q][q] = 1;
 				}
 
-				for (unsigned q = 0; q < tempnorm3->length; q++)
+				//for (unsigned q = 0; q < tempnorm3->length; q++)
+				for (unsigned q = 0; q < norm->length; q++)
 				{
-					for (unsigned p = 0; p < tempnorm3->length; p++)
+					//for (unsigned p = 0; p < tempnorm3->length; p++)
+					for (unsigned p = 0; p < norm->length; p++)
 					{
-						tempW[p][q] = tempnorm3->array[p] * tempnorm3->array[q];
+						//tempW[p][q] = tempnorm3->array[p] * tempnorm3->array[q];
+						tempW[p][q] = norm->array[p] * norm->array[q];
 					}
 					tempI[q][q] = 1;
 				}
@@ -1747,32 +1723,6 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 						tempH[t + p][t + q]= tempI[p][q] - 2 * tempW[p][q];
 					}
 				}
-
-
-				//
-				//for (unsigned p = 0; p < row; p++)
-				//{
-				//	for (unsigned q = 0; q < row; q++)
-				//	{
-				//		cout << tempHI[p][q] << " ";
-				//	}
-				//	cout << endl;
-				//}
-				//getchar();
-
-
-				//
-				//for (unsigned p = 0; p < row; p++)
-				//{
-				//	for (unsigned q = 0; q < row; q++)
-				//	{
-				//		cout << tempH[p][q] << " ";
-				//	}
-				//	cout << endl;
-				//}
-				//getchar();
-
-
 
 				for (unsigned p = 0; p < row; p++)
 				{					
@@ -1789,17 +1739,8 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 					}
 				}
 
-
-				
-				//for (unsigned p = 0; p < row; p++)
-				//{
-				//	for (unsigned q = 0; q < row; q++)
-				//	{
-				//		cout << temp3[i][p][q] << " ";
-				//	}
-				//	cout << endl;
-				//}
-				//getchar();
+				//_2DimensionPointerMultiby2DimensionPointer(tempHI, row, row, row, tempH, tempHM);
+				//_2DimensionPointerCopyto2DimensionPointer(tempHM, row,row,tempHI);
 
 
 				for (unsigned p = 0; p < row; p++)
@@ -1809,17 +1750,6 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 						tempHI[p][q] = temp3[i][p][q];
 					}
 				}
-
-				//
-				//for (unsigned p = 0; p < row; p++)
-				//{
-				//	for (unsigned q = 0; q < row; q++)
-				//	{
-				//		cout << htemp[j][p][q] << " ";
-				//	}
-				//	cout << endl;
-				//}
-				//getchar();
 
 				for (unsigned p = 0; p < column; p++)
 				{
@@ -1832,17 +1762,6 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 					}
 				}
 
-				//
-				//for (unsigned p = 0; p < row; p++)
-				//{
-				//	for (unsigned q = 0; q < column; q++)
-				//	{
-				//		cout << tempR[p][q]<< " ";
-				//	}
-				//	cout << endl;
-				//}
-				//getchar();
-
 				for (unsigned p = 0; p < column; p++)
 				{
 					for (unsigned q = 0; q < row; q++)
@@ -1851,27 +1770,18 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 					}
 				}
 
-				//
-				//for (unsigned p = 0; p < row; p++)
-				//{
-				//	for (unsigned q = 0; q < column; q++)
-				//	{
-				//		cout << DividedByVector[p]->array[q] << " ";
-				//	}
-				//	cout << endl;
-				//}
-				//getchar();
-
 				DestroyVector(norm);
 				DestroyVector(DividedByVectortemp);
-				DestroyVector(tempnorm);
-				DestroyVector(tempnorm2);
-				DestroyVector(tempnorm3);
+				//DestroyVector(tempnorm);
+				//DestroyVector(tempnorm2);
+				//DestroyVector(tempnorm3);
 
-				Destory2DimensionPointer(tempI, tempnorm3->length);
-				Destory2DimensionPointer(tempW, tempnorm3->length);
-				Destory2DimensionPointer(tempR, row);
-				Destory2DimensionPointer(tempH, row);
+				//Destroy2DimensionPointer(tempI, tempnorm3->length);
+				Destroy2DimensionPointer(tempI, norm->length);
+				//Destroy2DimensionPointer(tempW, tempnorm3->length);
+				Destroy2DimensionPointer(tempW, norm->length);
+				Destroy2DimensionPointer(tempR, row);
+				Destroy2DimensionPointer(tempH, row);
 
 				t++;
 				num--;
@@ -1884,29 +1794,33 @@ int RealQR(const Matrix* matrix,Matrix* Q, Matrix* R)
 				}
 			}
 
-			for (unsigned q = 0; q < row; q++)
-			{
-				for (unsigned p= 0; p < row; p++)
-				{
-					R->array[i*row*row + q * row + p] = temp2[i][q][p];
-					Q->array[i*row*row + q * row + p]= temp3[i][q][p];
-				}
-			}
+			//_2DimensionPointerCopytoMatrix(Q, i, row, row, tempHI);
+			//for (unsigned q = 0; q < row; q++)
+			//{
+			//	for (unsigned p= 0; p < row; p++)
+			//	{
+			//		R->array[i*row*row + q * row + p] = temp2[i][q][p];
+			//		Q->array[i*row*row + q * row + p]= temp3[i][q][p];
+			//	}
+			//}
 
-			for (unsigned p = 0; p < column; p++)
-			{
-				DestroyVector(DividedByVector[p]);
-			}
-			free(DividedByVector);
-			DividedByVector = NULL;
-			Destory2DimensionPointer(tempHI, row);
+			//for (unsigned p = 0; p < column; p++)
+			//{
+			//	DestroyVector(DividedByVector[p]);
+			//}
+			//free(DividedByVector);
+			//DividedByVector = NULL;
+
+			Destroy2DimensionVector(DividedByVector, column);
+			Destroy2DimensionPointer(tempHI, row);
+			//Destroy2DimensionPointer(tempHM, row);
 
 		}
-
-		DestoryVectorPoint(temp1, matrix->row, matrix->height);
-		DestoryVectorPoint(temp2, row, matrix->height);
-		DestoryVectorPoint(temp3, row, matrix->height);
-		//DestoryVectorPoint(htemp, row, column);
+		__3DimensionPointerCopytoMatrix(temp2, row, column, matrix->height, R);
+		__3DimensionPointerCopytoMatrix(temp3, row, column, matrix->height, Q);
+		Destroy3DimensionPointer(temp1, matrix->row, matrix->height);
+		Destroy3DimensionPointer(temp2, row, matrix->height);
+		Destroy3DimensionPointer(temp3, row, matrix->height);
 	}
 
 	return 0;
@@ -1939,9 +1853,9 @@ int RealGivens(const Matrix* matrix, Matrix* Q, Matrix* R)
 		BuildMatrix(Q, row, row, matrix->height);
 		BuildMatrix(R, row, row, matrix->height);
 
-		MatrixType***temp1 = MatrixToVector(matrix, Element);
-		MatrixType***temp2 = MatrixToVector(R, Zero);
-		MatrixType***temp3 = MatrixToVector(Q, Zero);
+		MatrixType***temp1 = MatrixTo3DimensionPointer(matrix, Element);
+		MatrixType***temp2 = MatrixTo3DimensionPointer(R, Zero);
+		MatrixType***temp3 = MatrixTo3DimensionPointer(Q, Zero);
 
 		for (unsigned i = 0; i < matrix->height; i++)
 		{
@@ -2085,7 +1999,7 @@ int RealGivens(const Matrix* matrix, Matrix* Q, Matrix* R)
 						}
 					}
 					
-					Destory2DimensionPointer(tempR, row);
+					Destroy2DimensionPointer(tempR, row);
 
 				}
 
@@ -2108,7 +2022,7 @@ int RealGivens(const Matrix* matrix, Matrix* Q, Matrix* R)
 				//}
 				//getchar();
 
-				Destory2DimensionPointer(tempRt, row);
+				Destroy2DimensionPointer(tempRt, row);
 
 				index++;
 
@@ -2130,12 +2044,12 @@ int RealGivens(const Matrix* matrix, Matrix* Q, Matrix* R)
 			free(DividedByVector);
 			DividedByVector = NULL;
 
-			Destory2DimensionPointer(tempHI, row);
+			Destroy2DimensionPointer(tempHI, row);
 
 		}
-		DestoryVectorPoint(temp1, matrix->row, matrix->height);
-		DestoryVectorPoint(temp2, row, matrix->height);
-		DestoryVectorPoint(temp3, row, matrix->height);
+		Destroy3DimensionPointer(temp1, matrix->row, matrix->height);
+		Destroy3DimensionPointer(temp2, row, matrix->height);
+		Destroy3DimensionPointer(temp3, row, matrix->height);
 		
 	}
 
@@ -2160,9 +2074,9 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 		Matrix* H1 = new Matrix;
 		BuildMatrix(H1, row, row, matrix->height);
 
-		MatrixType***temp1 = MatrixToVector(matrix, Element);
-		MatrixType***temp2 = MatrixToVector(H, Zero);
-		MatrixType***temp3 = MatrixToVector(P, Zero);
+		MatrixType***temp1 = MatrixTo3DimensionPointer(matrix, Element);
+		MatrixType***temp2 = MatrixTo3DimensionPointer(H, Zero);
+		MatrixType***temp3 = MatrixTo3DimensionPointer(P, Zero);
 
 		for (unsigned i = 0; i < matrix->height; i++)
 		{
@@ -2362,10 +2276,10 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 				DestroyVector(tempnorm2);
 				DestroyVector(tempnorm3);
 
-				Destory2DimensionPointer(tempI, tempnorm3->length);
-				Destory2DimensionPointer(tempW, tempnorm3->length);
-				Destory2DimensionPointer(tempH, row);
-				Destory2DimensionPointer(tempP, row);
+				Destroy2DimensionPointer(tempI, tempnorm3->length);
+				Destroy2DimensionPointer(tempW, tempnorm3->length);
+				Destroy2DimensionPointer(tempH, row);
+				Destroy2DimensionPointer(tempP, row);
 
 				t++;
 				num--;
@@ -2393,16 +2307,16 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 			}
 			free(DividedByVector);
 			DividedByVector = NULL;
-			Destory2DimensionPointer(tempHI, row);
+			Destroy2DimensionPointer(tempHI, row);
 
 		}
 
 		MatrixMultibyMatrix(H1,P, H);
 
 		DestroyMatrix(H1);
-		DestoryVectorPoint(temp1, matrix->row, matrix->height);
-		DestoryVectorPoint(temp2, row, matrix->height);
-		DestoryVectorPoint(temp3, row, matrix->height);
+		Destroy3DimensionPointer(temp1, matrix->row, matrix->height);
+		Destroy3DimensionPointer(temp2, row, matrix->height);
+		Destroy3DimensionPointer(temp3, row, matrix->height);
 	}
 
 
@@ -2452,7 +2366,7 @@ int EginVectorReal(const Matrix* matrix, Vector* EV, MatrixType& Lambda)
 	}
 	else
 	{
-		MatrixType***temp1 = MatrixToVector(matrix, Element);
+		MatrixType***temp1 = MatrixTo3DimensionPointer(matrix, Element);
 
 		BuildVector(EV, matrix->row);
 
@@ -2540,7 +2454,7 @@ int EginVectorReal(const Matrix* matrix, Vector* EV, MatrixType& Lambda)
 			DestroyVector(v);
 			DestroyVector(vn);
 		}
-		DestoryVectorPoint(temp1, matrix->row, matrix->height);
+		Destroy3DimensionPointer(temp1, matrix->row, matrix->height);
 	}
 
 	return 0;

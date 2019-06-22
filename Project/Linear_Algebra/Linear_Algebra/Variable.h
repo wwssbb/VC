@@ -35,6 +35,12 @@ typedef enum
 	Element = 1,
 }ElementType;
 
+typedef struct
+{
+	double real;
+	double imaginary;
+}ComplexType;
+
 typedef enum
 {
 	OrthogonalMatrix,
