@@ -16,7 +16,7 @@ int main()
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF || _CRTDBG_LEAK_CHECK_DF);
 	const unsigned NUM = 50; //最大迭代次数
 
-	unsigned N = 6;
+	unsigned N = 15;
 
 	unsigned layer = 3;
 

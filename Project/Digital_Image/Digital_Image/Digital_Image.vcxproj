@@ -21,6 +21,9 @@
   <ItemGroup>
     <ClInclude Include="BMP.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{917C33E6-FEF3-4177-BE82-8E2A1A560C3E}</ProjectGuid>

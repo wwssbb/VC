@@ -15,15 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FunctionHeader.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ComplexMatrix.h">
+    <ClInclude Include="NeuralNetwork.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Test.cpp">
+    <ClCompile Include="Source.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

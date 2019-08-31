@@ -1,11 +1,9 @@
 #pragma once
-#include"string.h"
-#include"stdio.h"
-#include"stdlib.h"
-#include"math.h"
-#include"time.h"
+#include<string.h>
+#include<math.h>
+#include<time.h>
 #include<iostream>
-#include<complex.h>
+
 
 using namespace std;
 
@@ -29,8 +27,8 @@ public:
 
 ComplexType::ComplexType()
 {
-	this->Real = 0;
-	this->Imaginary = 0;
+	this->Real = 0.0;
+	this->Imaginary = 0.0;
 	this->Period = 0.0;
 }
 
@@ -167,8 +165,7 @@ int MatrixComplex<Template>::FourierTransform(double* input, Template* output)
 				matrixcomplex[0][j][k]->multiByConst(input[k]);
 				output[j]->Add(matrixcomplex[0][j][k]);
 			}
-			//cout << output[j]->Real << endl;
-			//getchar();
+
 			output[j]->multiByConst(1 / sqrt(this->row));
 		}
 	//}
