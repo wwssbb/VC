@@ -19,7 +19,7 @@ int BuildMatrix(Matrix* matrix, unsigned row, unsigned column, unsigned height)
 
 Bool IsNullMatrix(const Matrix* matrix)
 {
-	unsigned size = matrix->row * matrix->column * matrix->column;
+	int size = matrix->row * matrix->column * matrix->column;
 
 	if (size <= 0 || matrix->array == NULL)
 	{
@@ -186,7 +186,7 @@ int MatrixMultibyMatrix(const Matrix* A,const Matrix* B, Matrix* C)
 
 			if (IsNullMatrix(C))
 			{
-				BuildMatrix(C, A->row, A->column, A->height);
+				BuildMatrix(C, A->row, B->column, A->height);
 			}
 			else
 			{
@@ -229,15 +229,15 @@ int MatrixMultibyMatrix(const Matrix* A,const Matrix* B, Matrix* C)
 				//DestroyMatrix(B_template);
 
 
-				for (unsigned h = 0; h < A->height; h++)
+				for (int h = 0; h < A->height; h++)
 				{
-					for (unsigned i = 0; i < B->column; i++)
+					for (int i = 0; i < B->column; i++)
 					{
-						for (unsigned j = 0; j < A->row; j++)
+						for (int j = 0; j < A->row; j++)
 						{
 							MatrixType row_template = 0.0;
 
-							for (unsigned k = 0; k < A->column; k++)
+							for (int k = 0; k < A->column; k++)
 							{
 								row_template += B->array[h * B->row * B->column + i + k * B->column] * A->array[h * A->row * A->column + j * A->column + k];
 							}
@@ -925,7 +925,7 @@ int BuildVector(Vector* vector, unsigned n)
 
 Bool IsNullVector(const Vector* vector)
 {
-	unsigned size = vector->length;
+	int size = vector->length;
 
 	if (size <= 0 || vector->array == NULL)
 	{
@@ -1082,7 +1082,7 @@ int VectorSubstractVector(const Vector* A, const Vector* B, Vector* C)
 		{
 			int trigger = 0;
 
-			if (!IsNullVector)
+			if (IsNullVector(C))
 			{
 				BuildVector(C, A->length);
 			}
@@ -1307,7 +1307,7 @@ int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons)
 	{
 		int trigger = 0;
 
-		if (!IsNullVector)
+		if (IsNullVector(C))
 		{
 			BuildVector(C, A->length);
 		}
@@ -1322,7 +1322,7 @@ int VectorMultibyConst(const Vector* A, Vector* C, VectorType cons)
 
 		if (!trigger)
 		{
-			for (unsigned i = 0; i < A->length; i++)
+			for (int i = 0; i < A->length; i++)
 			{
 				C->array[i] = A->array[i] * cons;
 			}
@@ -2078,19 +2078,19 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 		MatrixType***temp2 = MatrixTo3DimensionPointer(H, Zero);
 		MatrixType***temp3 = MatrixTo3DimensionPointer(P, Zero);
 
-		for (unsigned i = 0; i < matrix->height; i++)
+		for (int i = 0; i < matrix->height; i++)
 		{
 			Vector** DividedByVector = (Vector**)malloc(sizeof(Vector*) * column);
 
-			for (unsigned n = 0; n < column; n++)
+			for (int n = 0; n < column; n++)
 			{
 				DividedByVector[n] = new Vector;
 				BuildVector(DividedByVector[n], row);
 			}
 
-			for (unsigned j = 0; j < column; j++)
+			for (int j = 0; j < column; j++)
 			{
-				for (unsigned k = 0; k < row; k++)
+				for (int k = 0; k < row; k++)
 				{
 					DividedByVector[j]->array[k] = temp1[i][k][j];
 				}
@@ -2100,12 +2100,12 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 			unsigned t = 1;
 
 			MatrixType** tempHI = Build2DimensionPointer(row, row);
-			for (unsigned hi = 0; hi < row; hi++)
+			for (int hi = 0; hi < row; hi++)
 			{
 				tempHI[hi][hi] = 1;
 			}
 
-			for (unsigned j = 0; j < column - 2; j++)
+			for (int j = 0; j < column - 2; j++)
 			{
 
 				Vector* norm = new Vector;
@@ -2115,8 +2115,8 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 				Vector* DividedByVectortemp = new Vector;
 				BuildVector(DividedByVectortemp, num);
 
-				unsigned tt = 0;
-				for (unsigned q = t; q < row; q++)
+				int tt = 0;
+				for (int q = t; q < row; q++)
 				{
 					DividedByVectortemp->array[tt] = DividedByVector[j]->array[q];
 					tt++;
@@ -2139,23 +2139,23 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 
 				MatrixType** tempP = Build2DimensionPointer(row, row);
 
-				for (unsigned q = 0; q < row; q++)
+				for (int q = 0; q < row; q++)
 				{
 					tempP[q][q] = 1;
 				}
 
-				for (unsigned q = 0; q < tempnorm3->length; q++)
+				for (int q = 0; q < tempnorm3->length; q++)
 				{
-					for (unsigned p = 0; p < tempnorm3->length; p++)
+					for (int p = 0; p < tempnorm3->length; p++)
 					{
 						tempW[p][q] = tempnorm3->array[p] * tempnorm3->array[q];
 					}
 					tempI[q][q] = 1;
 				}
 
-				for (unsigned p = 0; p < num; p++)
+				for (int p = 0; p < num; p++)
 				{
-					for (unsigned q = 0; q < num; q++)
+					for (int q = 0; q < num; q++)
 					{
 						tempP[t + p][t + q] = tempI[p][q] - 2 * tempW[p][q];
 					}
@@ -2173,13 +2173,13 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 				//}
 				//getchar();
 
-				for (unsigned p = 0; p < row; p++)
+				for (int p = 0; p < row; p++)
 				{
-					for (unsigned q = 0; q < row; q++)
+					for (int q = 0; q < row; q++)
 					{
 						MatrixType te = 0.0;
 
-						for (unsigned m = 0; m < row; m++)
+						for (int m = 0; m < row; m++)
 						{
 							te += tempP[q][m] * tempHI[m][p];
 						}
@@ -2199,9 +2199,9 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 				//}
 				//getchar();
 
-				for (unsigned p = 0; p < row; p++)
+				for (int p = 0; p < row; p++)
 				{
-					for (unsigned q = 0; q < row; q++)
+					for (int q = 0; q < row; q++)
 					{
 						tempHI[p][q] = temp3[i][p][q];
 					}
@@ -2218,11 +2218,11 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 				//}
 				//getchar();
 
-				for (unsigned p = 0; p < column; p++)
+				for (int p = 0; p < column; p++)
 				{
-					for (unsigned q = 0; q < row; q++)
+					for (int q = 0; q < row; q++)
 					{
-						for (unsigned m = 0; m < row; m++)
+						for (int m = 0; m < row; m++)
 						{
 							tempH[q][p] += tempP[q][m] * DividedByVector[p]->array[m];
 						}
@@ -2251,9 +2251,9 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 				//}
 				//getchar();
 
-				for (unsigned p = 0; p < column; p++)
+				for (int p = 0; p < column; p++)
 				{
-					for (unsigned q = 0; q < row; q++)
+					for (int q = 0; q < row; q++)
 					{
 						DividedByVector[p]->array[q] = tempH[q][p];
 					}
@@ -2284,24 +2284,24 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P)
 				t++;
 				num--;
 			}
-			for (unsigned p = 0; p < column; p++)
+			for (int p = 0; p < column; p++)
 			{
-				for (unsigned q = 0; q < row; q++)
+				for (int q = 0; q < row; q++)
 				{
 					temp2[i][q][p] = DividedByVector[p]->array[q];
 				}
 			}
 
-			for (unsigned q = 0; q < row; q++)
+			for (int q = 0; q < row; q++)
 			{
-				for (unsigned p = 0; p < row; p++)
+				for (int p = 0; p < row; p++)
 				{
 					H1->array[i*row*row + q * row + p] = temp2[i][q][p];
 					P->array[i*row*row + q * row + p] = temp3[i][q][p];
 				}
 			}
 
-			for (unsigned p = 0; p < column; p++)
+			for (int p = 0; p < column; p++)
 			{
 				DestroyVector(DividedByVector[p]);
 			}
@@ -2333,8 +2333,9 @@ int EginValue(const Matrix* matrix,Matrix* E,Matrix* EV)
 	{
 		Matrix* P = new Matrix;
 		RealHessenBurg(matrix, E, P);
+		int trigger = 0;
 
-		for (unsigned i = 0; i < 100; i++)
+		for (int i = 0; i < 2000; i++)
 		{
 			Matrix *Q = new Matrix;
 			Matrix *R = new Matrix;
@@ -2343,16 +2344,148 @@ int EginValue(const Matrix* matrix,Matrix* E,Matrix* EV)
 
 			MatrixMultibyMatrix(R, Q, E);
 
-			if (i == 98)
-			{
-				MatrixCopy(R, EV);
-			}
+			//if (i == 999)
+			//{
+			//	MatrixCopy(Q, EV);
+			//}
 			
 			DestroyMatrix(Q);
 			DestroyMatrix(R);
 		}
 
+		BuildMatrix(EV, E->row, E->column, E->height);
+
+		MatrixType***temp2 = MatrixTo3DimensionPointer(EV, Zero);
+		
+		for (int i = 0; i < E->row; i++)
+		{
+			Matrix* gama = new Matrix;
+			Matrix* deta = new Matrix;
+			Matrix *Q1 = new Matrix;
+			Matrix *R1 = new Matrix;
+
+			BuildMatrix(gama, E->row, E->column, E->height);
+
+			for (int h = 0; h < E->height; h++)
+			{
+				for (int j = 0; j < E->row; j++)
+				{
+					gama->array[h * gama->row * gama->column + j * gama->column + j] = E->array[h * E->row * E->column + i * E->column + i];
+				}				
+			}
+
+			MatrixSubstract(gama, matrix,deta);
+
+			//直接QR分解构造上三角矩阵
+			//RealQR(deta, Q1, R1);
+
+			//Gaussian主元法
+			/*********这部分测试使用*******/
+			//PrintMatrix(deta);
+			//getchar();
+			MatrixType***tp1 = MatrixTo3DimensionPointer(deta, Element);
+
+			for (unsigned i = 0; i < deta->height; i++)
+			{
+				//用于暂存中间变量（要调换的列）
+				MatrixType middle = 0.0;
+
+				//对角线找主元和向下消主元是同时进行的，一经发现对角线非主元立刻向下消元
+				for (unsigned j = 0; j < deta->row; j++)
+				{
+					//如果对角线为0，向右找主元
+					if (tp1[i][j][j] == 0)
+					{
+						for (unsigned m = j + 1; m <= deta->column; m++)
+						{
+							if (m < deta->column)
+							{
+								//行列式互换相邻行和列需要乘以-1
+								if (tp1[i][j][m] == 0)
+								{
+
+								}
+								else
+								{
+									for (unsigned w = 0; w < deta->row; w++)
+									{
+										middle = tp1[i][w][j];
+										tp1[i][w][j] = tp1[i][w][m];
+										tp1[i][w][m] = middle;
+									}
+									break;
+								}
+							}
+						}
+					}
+
+					double div = 0.0;
+					for (unsigned h = j + 1; h < deta->row; h++)
+					{
+						div = tp1[i][h][j] / tp1[i][j][j];
+						for (unsigned k = 0; k < deta->column; k++)
+						{
+							tp1[i][h][k] = tp1[i][h][k] - div * tp1[i][j][k];
+						}
+					}
+				}
+			}
+			__3DimensionPointerCopytoMatrix(tp1, deta->row, deta->column, deta->height, R1);
+
+			//PrintMatrix(R1);
+			//getchar();
+			Destroy3DimensionPointer(tp1, deta->row, deta->height);
+			/****************这部分测试使用******************/
+
+
+
+			MatrixType***temp1 = MatrixTo3DimensionPointer(R1, Element);
+
+			for (int h = 0; h < R1->height; h++)
+			{
+				temp2[h][R1->row - 1][i] = 1.0;
+
+				for (int ii = R1->row - 2; ii >= 0; ii--)
+				{
+					MatrixType T = 0.0;
+
+					for (int jj = ii + 1; jj < R1->column; jj++)
+					{
+						T += temp1[h][ii][jj] * temp2[h][jj][i];
+
+						temp2[h][ii][i] = -T / temp1[h][ii][ii];
+					}
+				}
+
+				//normalize the eigen vector
+				MatrixType TT = 0.0;
+				
+				for (int jj = 0; jj <R1->row; jj++)
+				{
+					TT += temp2[h][jj][i]* temp2[h][jj][i];
+				}
+
+				TT = sqrt(TT);
+
+				for (int jj = 0; jj < R1->row; jj++)
+				{
+					temp2[h][jj][i] = temp2[h][jj][i]/TT;
+				}							
+			}
+
+			DestroyMatrix(gama);
+			DestroyMatrix(deta);
+			DestroyMatrix(Q1);
+			DestroyMatrix(R1);
+			Destroy3DimensionPointer(temp1, E->row, E->height);
+		}
+
+
+		__3DimensionPointerCopytoMatrix(temp2, E->row, E->column, E->height, EV);
+		Destroy3DimensionPointer(temp2, E->row, E->height);
+
 		DestroyMatrix(P);
+
 	}
 
 	return 0;
@@ -2393,7 +2526,7 @@ int EginVectorReal(const Matrix* matrix, Vector* EV, MatrixType& Lambda)
 			//PrintVector(v);
 			//getchar();
 
-			for (unsigned times = 0; times < 100; times++)
+			for (unsigned times = 0; times < 1000; times++)
 			{
 
 				Vector* vn = new Vector;
@@ -2456,6 +2589,98 @@ int EginVectorReal(const Matrix* matrix, Vector* EV, MatrixType& Lambda)
 		}
 		Destroy3DimensionPointer(temp1, matrix->row, matrix->height);
 	}
+
+	return 0;
+}
+
+int SVDReal(const Matrix* matrix, Matrix* U, Matrix* T, Matrix* V)
+{
+	if (IsNullMatrix(matrix))
+	{
+		cout << "The input matrix is empty." << endl;
+	}
+	else
+	{
+		int row = (matrix->column < matrix->row) ? matrix->column : matrix->row;
+
+		Matrix* MT = new Matrix;
+
+		Matrix* MT1 = new Matrix;
+
+		Matrix* MT2 = new Matrix;
+
+		Matrix* UE = new Matrix;
+
+		Matrix* VE = new Matrix;
+
+		MatrixTranspose(matrix, MT);
+
+		MatrixMultibyMatrix(matrix, MT, MT1);
+
+		MatrixMultibyMatrix(MT, matrix, MT2);
+
+
+		EginValue(MT2, VE, V);
+
+		BuildMatrix(T, matrix->row, matrix->column, matrix->height);
+
+		for (int h = 0; h < T->height; h++)
+		{
+			for (int i = 0; i < row; i++)
+			{
+				T->array[h * T->row * T->column + i * T->column + i] = sqrt(VE->array[h * VE->row * VE->column + i * VE->column + i]);
+			}
+		}
+
+		//MatrixMultibyMatrix(matrix, V, U);
+
+		//for (int h = 0; h < U->height; h++)
+		//{
+		//	for (int j = 0; j < U->column; j++)
+		//	{
+		//		for (int i = 0; i < U->row; i++)
+		//		{
+		//			U->array[h * U->row * U->column + i * U->column + j] = U->array[h * U->row * U->column + i * U->column + j] / T->array[h * T->row * T->column + j * T->column + j];
+		//		}
+		//	}
+		//}
+
+		MatrixTranspose(V,V);
+
+		EginValue(MT1, UE, U);
+
+		DestroyMatrix(MT);
+		DestroyMatrix(MT1);
+		DestroyMatrix(MT2);
+		DestroyMatrix(UE);
+		DestroyMatrix(VE);
+
+	}
+
+	return 0;
+}
+
+int SVDInv(const Matrix* matrix, Matrix* C)
+{
+	Matrix* U = new Matrix;
+	Matrix* T = new Matrix;
+	Matrix* V = new Matrix;
+	Matrix* Cm1 = new Matrix;
+
+	SVDReal(matrix, U, T, V);
+
+	MatrixTranspose(T, T);
+
+	MatrixTranspose(U, U);
+
+	MatrixMultibyMatrix(V, T, Cm1);
+
+	MatrixMultibyMatrix(Cm1,U,C);
+
+	DestroyMatrix(U);
+	DestroyMatrix(T);
+	DestroyMatrix(V);
+	DestroyMatrix(Cm1);
 
 	return 0;
 }

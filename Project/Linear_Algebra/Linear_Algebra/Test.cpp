@@ -2,7 +2,7 @@
 //#include"Variable.h"
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
-
+#include"Eigen"
 #ifdef _DEBUG
 #ifndef DBG_NEW
 #define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
@@ -13,12 +13,29 @@
 int main()
 
 {
+	//Eigen::MatrixXd m(2, 2);
+	//m(0, 0) = 3;
+	//m(1, 0) = 2.5;
+	//m(0, 1) = -1;
+	//m(1, 1) = m(1, 0) + m(0, 1);
+	//std::cout << "Here is the matrix m:\n" << m << std::endl;
+	//Eigen::VectorXd v(2);
+	//v(0) = 4;
+	//v(1) = v(0) - 1;
+	//std::cout << "Here is the vector v:\n" << v << std::endl;
+
+
+
+
+
+
+
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF || _CRTDBG_LEAK_CHECK_DF);
 	const unsigned NUM = 50; //最大迭代次数
 
-	unsigned N = 15;
+	unsigned N = 3;
 
-	unsigned layer = 3;
+	unsigned layer = 1;
 
 	Matrix* A=new Matrix;
 
@@ -38,9 +55,9 @@ int main()
 
 	BuildVector(determinant, layer);;
 
-	//Matrix* H = new Matrix;
+	Matrix* H = new Matrix;
 
-	//Matrix* P = new Matrix;
+	Matrix* P = new Matrix;
 
 	//Matrix* E = new Matrix;
 	//Matrix* EV = new Matrix;
@@ -59,23 +76,23 @@ int main()
 	//SetMatrixSize(B, 3, 1, 1);
 
 
-	//A->array[0] = 1.0;
+	//A->array[0] = 1;
 
-	//A->array[1] = 1.0;
+	//A->array[1] = 1;
 
-	//A->array[2] = 0.5;
+	//A->array[2] = 1;
 
-	//A->array[3] = 1.0;
+	//A->array[3] = 2;
 
-	//A->array[4] = 1.0;
+	//A->array[4] = -1;
 
-	//A->array[5] = 0.25;
+	//A->array[5] = -1;
 
-	//A->array[6] = 0.5;
+	//A->array[6] = 2;
 
-	//A->array[7] = 0.25;
+	//A->array[7] = -4;
 
-	//A->array[8] = 2.0;
+	//A->array[8] = 5;
 
 	//A->array[0] = 1;
 
@@ -172,7 +189,7 @@ int main()
 	//MatrixTranspose(A,B);
 	//MatrixMultibyMatrix(A, B, C);
 	//PrintMatrix(A);
-	//RealHessenBurg(A, H, P);
+	RealHessenBurg(A, H, P);
 
 
 	//EginVectorReal(A, Uk, Lambda);
@@ -187,8 +204,8 @@ int main()
 	//PrintMatrix(A);
 	//PrintMatrix(E);
 	//PrintMatrix(EV);
-	//PrintMatrix(H);
-	//PrintMatrix(P);
+	PrintMatrix(H);
+	PrintMatrix(P);
 	//cout << endl;
 	//getchar();
 
@@ -227,8 +244,8 @@ int main()
 	DestroyMatrix(D);
 	DestroyMatrix(R1);
 	DestroyMatrix(Q1);
-	//DestroyMatrix(H);
-	//DestroyMatrix(P);
+	DestroyMatrix(H);
+	DestroyMatrix(P);
 	//DestroyMatrix(E);
 	//DestroyMatrix(EV);
 	//DestroyVector(Uk);

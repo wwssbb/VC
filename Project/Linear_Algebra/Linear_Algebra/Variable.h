@@ -19,13 +19,15 @@ typedef double VectorType;
 
 typedef struct
 {
-	unsigned row, column, height;
+	int row = 0; 
+	int column = 0;
+	int height = 0;
 	MatrixType* array;
 }Matrix;
 
 typedef struct
 {
-	unsigned length;
+	int length=0;
 	VectorType* array;
 }Vector;
 

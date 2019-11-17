@@ -142,3 +142,7 @@ int RealHessenBurg(const Matrix* matrix, Matrix* H, Matrix* P);
 int EginValue(const Matrix* matrix, Matrix* E, Matrix* EV);
 
 int EginVectorReal(const Matrix* matrix, Vector* EV, MatrixType& Lambda);
+
+int SVDReal(const Matrix* matrix, Matrix* U, Matrix* T, Matrix* V);
+
+int SVDInv(const Matrix* matrix, Matrix* C);
