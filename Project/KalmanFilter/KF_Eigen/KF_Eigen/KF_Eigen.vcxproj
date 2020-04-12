@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>E:\TestWorkSpace\KalmanFilter\KF_Eigen\KF_Eigen\Eigen;$(IncludePath)</IncludePath>
+    <IncludePath>D:\NewRepo\Project\Linear_Algebra\Eigen;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>D:\NewRepo\Project\KalmanFilter\KF_Eigen\KF_Eigen\Eigen;$(IncludePath)</IncludePath>

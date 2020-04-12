@@ -4,6 +4,7 @@ int main()
 {
 
 	KalMan_std K(4, 20);
+	KalMan_std* K2 = new KalMan_std(4, 20);
 
 	for (int i = 0; i < K.length; i++)
 	{
